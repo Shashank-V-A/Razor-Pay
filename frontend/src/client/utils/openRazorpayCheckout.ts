@@ -66,7 +66,38 @@ export async function openRazorpayCheckout(options: {
       currency: 'INR',
       name: options.name || 'PrizeVault',
       description: options.description || 'Prize escrow deposit',
-      prefill: options.prefillEmail ? { email: options.prefillEmail } : undefined,
+      // Test Mode: UPI opens a live QR that cannot be paid with a real app.
+      // NPCI also retired UPI Collect (typed VPA) in 2026. Use mock netbanking.
+      prefill: {
+        email: options.prefillEmail || undefined,
+        contact: '9000090000',
+        method: 'netbanking',
+      },
+      method: {
+        upi: false,
+        netbanking: true,
+        card: true,
+        wallet: false,
+        emi: false,
+        paylater: false,
+      },
+      config: {
+        display: {
+          blocks: {
+            banks: {
+              name: 'Test netbanking — pick any bank, then Success',
+              instruments: [{ method: 'netbanking' }],
+            },
+            cards: {
+              name: 'Domestic card (Mastercard 5267 3181 8797 5449)',
+              instruments: [{ method: 'card' }],
+            },
+          },
+          hide: [{ method: 'upi' }],
+          sequence: ['block.banks', 'block.cards'],
+          preferences: { show_default_blocks: false },
+        },
+      },
       theme: { color: '#1a56db' },
       handler: (response: RazorpayCheckoutSuccess) => resolve(response),
       modal: {

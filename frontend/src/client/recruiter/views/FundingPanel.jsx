@@ -184,9 +184,10 @@ export default function FundingPanel({
                 <span className="pv-input-group__affix">INR</span>
               </div>
               <span className="pv-field__hint">
-                Opens Razorpay Checkout. Test card: 4111 1111 1111 1111, any future expiry, any
-                CVV, any 3D Secure password. A paid order then appears on Razorpay Orders and
-                Payments.
+                Test Mode: Mastercard 5267 3181 8797 5449, any future expiry, any CVV, then any
+                4-digit OTP (Skip OTP on the bank page can still show this Axis prompt — that is
+                Razorpay, not PrizeVault). Or pick any netbanking bank and click Success. Do not
+                use Visa 4111 or scan a UPI QR.
               </span>
             </div>
 
