@@ -5,6 +5,7 @@ import {
   saveHackathonsToStorage,
 } from '../holder/utils/roleDetection'
 import { broadcastHackathonsDatasetChanged } from '../utils/hackathonSync'
+import { PROPOSALS_STORAGE_KEY } from '../utils/payoutProposalsStorage'
 import { enrichHackathonLocation } from '../utils/hackathonGlobe'
 import { enrichHackathonFunding } from '../utils/format'
 import {
@@ -249,7 +250,7 @@ export async function fetchProposals(): Promise<Record<string, unknown>[]> {
     if (data.source === 'supabase' && Array.isArray(data.proposals)) {
       const cleaned = dropLegacyStellarProposals(data.proposals)
       try {
-        localStorage.setItem('prize_vault_payout_proposals', JSON.stringify(cleaned))
+        localStorage.setItem(PROPOSALS_STORAGE_KEY, JSON.stringify(cleaned))
       } catch {
         // ignore
       }
@@ -259,7 +260,7 @@ export async function fetchProposals(): Promise<Record<string, unknown>[]> {
     // fall through
   }
   try {
-    const stored = localStorage.getItem('prize_vault_payout_proposals')
+    const stored = localStorage.getItem(PROPOSALS_STORAGE_KEY)
     return dropLegacyStellarProposals(stored ? JSON.parse(stored) : [])
   } catch {
     return []
@@ -269,7 +270,7 @@ export async function fetchProposals(): Promise<Record<string, unknown>[]> {
 export async function saveAllProposals(proposals: Record<string, unknown>[]): Promise<void> {
   const cleaned = dropLegacyStellarProposals(proposals)
   try {
-    localStorage.setItem('prize_vault_payout_proposals', JSON.stringify(cleaned))
+    localStorage.setItem(PROPOSALS_STORAGE_KEY, JSON.stringify(cleaned))
   } catch {
     // ignore
   }

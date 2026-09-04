@@ -55,7 +55,7 @@ export async function createOrder(rupees: number, receipt: string): Promise<Razo
       currency: 'INR',
       receipt: receipt.slice(0, 40),
       payment_capture: 1,
-      notes: { product: 'prizevault', kind: 'prize_escrow_fund' },
+      notes: { product: 'twinlock', kind: 'prize_escrow_fund' },
     }),
   })
 
@@ -113,7 +113,7 @@ export async function createPayout(options: {
           account_type: options.destination.includes('@') ? 'vpa' : 'bank_account',
           vpa: options.destination.includes('@') ? { address: options.destination } : undefined,
         },
-        notes: { product: 'prizevault', destination: options.destination },
+        notes: { product: 'twinlock', destination: options.destination },
       }),
     })
     return {

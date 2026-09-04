@@ -1,4 +1,4 @@
-# PrizeVault (Next.js)
+# TwinLock (Next.js)
 
 Vercel **Root Directory** must be `frontend` (this folder).
 
@@ -57,7 +57,7 @@ After deploy, confirm: `GET /api/health` → `"supabaseConfigured": true`.
 ## Local
 
 ```bash
-# from prizevault/frontend
+# from frontend
 echo NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your_project_id >> .env.local
 npm run dev
 # → http://localhost:3000

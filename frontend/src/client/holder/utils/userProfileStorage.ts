@@ -1,6 +1,10 @@
 import { UserProfile } from '../../types/holder'
+import { migrateLocalKey } from '../../utils/twinLockStorage'
 
-const STORAGE_KEY = 'prize_vault_user_profiles'
+const STORAGE_KEY = 'twin_lock_user_profiles'
+if (typeof window !== 'undefined') {
+  migrateLocalKey('prize_vault_user_profiles', STORAGE_KEY)
+}
 
 type StoredProfile = UserProfile & { updatedAt?: string }
 

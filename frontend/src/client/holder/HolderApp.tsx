@@ -227,7 +227,7 @@ export default function HolderApp() {
 
       <footer className="pv-footer">
         <div className="pv-footer__inner">
-          <span>Hackathon prize escrow powered by Razorpay INR dual-control.</span>
+          <span>TwinLock · hackathon prize escrow powered by Razorpay INR dual-control.</span>
           <span className="pv-dim">2-of-2 approvals · Agentic gates · Receipt audit trail</span>
         </div>
       </footer>

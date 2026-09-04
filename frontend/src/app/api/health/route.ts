@@ -13,6 +13,7 @@ export async function GET() {
   const configured = isSupabaseConfigured();
   return NextResponse.json({
     ok: true,
+    product: "TwinLock",
     rail: "INR",
     vaultId: INR_VAULT_ID,
     razorpayConfigured: isRazorpayLiveConfigured(),

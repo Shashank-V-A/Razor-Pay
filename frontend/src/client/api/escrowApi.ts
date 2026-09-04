@@ -1,5 +1,5 @@
 /**
- * Frontend client for PrizeVault INR escrow API.
+ * Frontend client for TwinLock INR escrow API.
  */
 
 export type EscrowApiResponse = {
@@ -45,7 +45,7 @@ export async function postEscrow(
     const message =
       error instanceof Error
         ? error.message
-        : 'Network error reaching PrizeVault API'
+        : 'Network error reaching TwinLock API'
     return { success: false, txHash: '', error: message }
   }
 

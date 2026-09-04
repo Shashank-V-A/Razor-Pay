@@ -2,9 +2,9 @@ import { Hackathon, Participant } from '../../types/hackathon'
 import { getHackathonsFromStorage } from './roleDetection'
 import { getProfileForWallet } from './userProfileStorage'
 import {
-  PRIZE_VAULT_HACKATHONS_KEY,
+  TWIN_LOCK_HACKATHONS_KEY,
   REGISTERED_HACKATHONS_KEY,
-  broadcastHackathonsDatasetChanged,
+  emitHackathonsChanged,
 } from '../../utils/hackathonSync'
 import { registerParticipantForHackathon } from '../../services/hackathonApi'
 
@@ -45,10 +45,9 @@ function cacheRegistrationLocally(hackathonId: string, participant: Participant)
     return { ...h, participants, participantCount: participants.length }
   })
 
-  localStorage.setItem(PRIZE_VAULT_HACKATHONS_KEY, JSON.stringify(updated))
+  localStorage.setItem(TWIN_LOCK_HACKATHONS_KEY, JSON.stringify(updated))
   rememberRegisteredId(hackathonId)
-  window.dispatchEvent(new CustomEvent('prize_vault_hackathons_changed'))
-  broadcastHackathonsDatasetChanged()
+  emitHackathonsChanged()
 }
 
 /**

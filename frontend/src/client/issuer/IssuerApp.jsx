@@ -1,11 +1,11 @@
-  import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { hackathonBelongsToOrganizerPortal } from '../utils/organizerPortalFilter'
 import { clearActiveSession, hasRequiredRole, requireManualConnect } from '../utils/authSession'
 import { resolveSessionWithQrBootstrap } from '../utils/qrSession'
 import { disconnectWallet } from '../wallet'
 import { prizeTotal } from '../utils/format'
 import { useHackathons } from '../hooks/useHackathons'
-import { broadcastHackathonsDatasetChanged } from '../utils/hackathonSync'
+import { broadcastHackathonsDatasetChanged, TWIN_LOCK_HACKATHONS_KEY } from '../utils/hackathonSync'
 import { saveHackathonsToStorage } from '../holder/utils/roleDetection'
 import { dropLegacyStellarHackathons } from '../utils/legacyWeb3Data'
 import { syncWalletSession } from '../services/sessionApi'
@@ -22,7 +22,7 @@ import AuditLogPage from './components/AuditLogPage'
 import TwoFASetup from './components/TwoFASetup'
 import Timeline from './components/Timeline'
 
-const HACKATHON_STORAGE_KEY = 'prize_vault_hackathons'
+const HACKATHON_STORAGE_KEY = TWIN_LOCK_HACKATHONS_KEY
 
 /**
  * One-time normalisation of the stored dataset. Must run in an effect, not in
@@ -116,8 +116,12 @@ export default function IssuerApp() {
   useEffect(() => {
     const refreshLogs = () => setAuditLogs(getIssuerAuditLogs())
     refreshLogs()
+    window.addEventListener('twin_lock_audit_logs_updated', refreshLogs)
     window.addEventListener('prize_vault_audit_logs_updated', refreshLogs)
-    return () => window.removeEventListener('prize_vault_audit_logs_updated', refreshLogs)
+    return () => {
+      window.removeEventListener('twin_lock_audit_logs_updated', refreshLogs)
+      window.removeEventListener('prize_vault_audit_logs_updated', refreshLogs)
+    }
   }, [])
 
   const handleNavigate = (view, param) => {

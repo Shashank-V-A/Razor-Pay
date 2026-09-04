@@ -1,4 +1,4 @@
-# Supabase setup (PrizeVault)
+# Supabase setup (TwinLock)
 
 Project: **https://mjlbcskcsrxkjycjpdyh.supabase.co**
 

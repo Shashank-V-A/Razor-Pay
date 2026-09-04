@@ -9,7 +9,7 @@ import {
   requireManualConnect,
 } from './utils/authSession'
 import { resolveSessionWithQrBootstrap } from './utils/qrSession'
-import { getPayoutProposals, savePayoutProposals } from './utils/payoutProposalsStorage'
+import { getPayoutProposals, savePayoutProposals, PROPOSALS_STORAGE_KEY } from './utils/payoutProposalsStorage'
 import {
   broadcastHackathonsDatasetChanged,
   subscribeHackathonsDatasetChanged,
@@ -91,7 +91,7 @@ function SponsorConsole() {
     refresh()
     return subscribeHackathonsDatasetChanged(() => {
       void refresh()
-    }, ['prize_vault_payout_proposals'])
+    }, [PROPOSALS_STORAGE_KEY, 'prize_vault_payout_proposals'])
   }, [senderAddress])
 
   const escrows = useMemo(
@@ -244,8 +244,8 @@ function SponsorConsole() {
           key: fundResult.keyId || '',
           orderId: fundResult.orderId || fundResult.txHash,
           amountPaise: fundResult.amountPaise,
-          name: 'PrizeVault',
-          description: `Prize escrow · ${hackRow.name}`,
+          name: 'TwinLock',
+          description: `TwinLock escrow · ${hackRow.name}`,
           prefillEmail: senderAddress,
         })
         const confirmed = await confirmFund(paid)
@@ -508,7 +508,7 @@ function SponsorConsole() {
 
       <footer className="pv-footer">
         <div className="pv-footer__inner">
-          <span>INR hackathon prize vault · sponsor console.</span>
+          <span>TwinLock · INR dual-control prize escrow · sponsor console.</span>
           <ul className="pv-footer__links">
             <li>
               <a href="/issuer">Organizer tools</a>

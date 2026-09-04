@@ -3,12 +3,12 @@ import { Hackathon } from '../../types/hackathon'
 import { getPayoutProposals, savePayoutProposals } from '../../utils/payoutProposalsStorage'
 import { dropLegacyStellarHackathons } from '../../utils/legacyWeb3Data'
 import {
-  broadcastHackathonsDatasetChanged,
-  PRIZE_VAULT_HACKATHONS_KEY,
-  REGISTERED_HACKATHONS_KEY,
+  TWIN_LOCK_HACKATHONS_KEY,
+  TWIN_LOCK_TIMELINE_KEY,
+  emitHackathonsChanged,
 } from '../../utils/hackathonSync'
 
-const STORAGE_KEY = PRIZE_VAULT_HACKATHONS_KEY
+const STORAGE_KEY = TWIN_LOCK_HACKATHONS_KEY
 
 /**
  * Detects user role based on wallet address and hackathon data
@@ -106,15 +106,14 @@ export function saveHackathonsToStorage(
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(dropLegacyStellarHackathons(hackathons)))
     if (typeof window !== 'undefined' && shouldBroadcast) {
-      window.dispatchEvent(new CustomEvent('prize_vault_hackathons_changed'))
-      broadcastHackathonsDatasetChanged()
+      emitHackathonsChanged()
     }
   } catch (_) {
     // Ignore storage errors
   }
 }
 
-const TIMELINE_STORAGE_KEY = 'prize_vault_hackathon_timelines'
+const TIMELINE_STORAGE_KEY = TWIN_LOCK_TIMELINE_KEY
 
 /**
  * Removes a hackathon everywhere it is persisted (shared across organizer, sponsor, participant UIs).

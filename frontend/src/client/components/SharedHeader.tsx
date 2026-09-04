@@ -90,7 +90,7 @@ export default function SharedHeader({
           <span className="pv-brand__mark" aria-hidden>
             <Icon name="lock" size={14} />
           </span>
-          <span>PrizeVault</span>
+          <span>TwinLock</span>
           {subtitle ? <span className="pv-brand__sub">{subtitle}</span> : null}
         </a>
 

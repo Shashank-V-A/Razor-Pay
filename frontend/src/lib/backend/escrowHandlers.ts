@@ -42,7 +42,7 @@ export function fail(error: unknown): ApiFailure {
       ? error.message
       : typeof error === "string"
         ? error
-        : "Prize vault request failed";
+        : "TwinLock request failed";
   return { success: false, txHash: "", error: message };
 }
 

@@ -3,10 +3,15 @@
  */
 
 import { dropLegacyStellarProposals } from './legacyWeb3Data'
-import { broadcastHackathonsDatasetChanged } from './hackathonSync'
+import { emitHackathonsChanged } from './hackathonSync'
 import { saveAllProposals, fetchProposals } from '../services/hackathonApi'
+import { migrateLocalKey } from './twinLockStorage'
 
-export const PROPOSALS_STORAGE_KEY = 'prize_vault_payout_proposals'
+export const PROPOSALS_STORAGE_KEY = 'twin_lock_payout_proposals'
+
+if (typeof window !== 'undefined') {
+  migrateLocalKey('prize_vault_payout_proposals', PROPOSALS_STORAGE_KEY)
+}
 
 export function getPayoutProposals(): Record<string, unknown>[] {
   try {
@@ -39,8 +44,7 @@ export async function loadPayoutProposalsFromApi(): Promise<Record<string, unkno
 
 export function notifyProposalsChanged(): void {
   try {
-    window.dispatchEvent(new CustomEvent('prize_vault_hackathons_changed'))
-    broadcastHackathonsDatasetChanged()
+    emitHackathonsChanged()
   } catch (_) {
     // best-effort
   }

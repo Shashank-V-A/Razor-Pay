@@ -61,7 +61,7 @@ function normalizePayouts(winners: ProposeWinnerInput[]): EscrowPayout[] {
 }
 
 /**
- * React hook that talks to the PrizeVault Express API:
+ * React hook that talks to the TwinLock escrow API:
  *   POST /api/escrow/propose | approve | execute
  */
 export function useEscrow(): UseEscrowResult {

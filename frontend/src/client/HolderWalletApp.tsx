@@ -39,7 +39,7 @@ class HolderErrorBoundary extends Component<
                     <path d="M8 9V7a4 4 0 0 1 8 0v2" />
                   </svg>
                 </span>
-                <span className="pv-brand__name">PrizeVault</span>
+                <span className="pv-brand__name">TwinLock</span>
               </a>
             </div>
           </header>

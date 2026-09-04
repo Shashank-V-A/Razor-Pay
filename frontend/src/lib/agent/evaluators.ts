@@ -82,7 +82,7 @@ export async function evaluateGit(winners: WinnerLike[]): Promise<GateResult> {
   for (const { owner, repo } of repos) {
     try {
       const res = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {
-        headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'prizevault-agent' },
+        headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'twinlock-agent' },
       })
       if (!res.ok) {
         notes.push(`${owner}/${repo}: GitHub ${res.status}`)
@@ -138,7 +138,7 @@ export function complianceRecord(entry: {
   return {
     ...entry,
     immutable: true,
-    product: 'prizevault',
+    product: 'twinlock',
     rail: 'INR',
   }
 }
