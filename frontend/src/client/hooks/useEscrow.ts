@@ -24,6 +24,16 @@ export type UseEscrowResult = {
   lastTxHash: string
   clearError: () => void
   fundVault: (hackathonId: string, amountInr: number) => Promise<EscrowApiResponse>
+  confirmFund: (checkout: {
+    razorpay_order_id: string
+    razorpay_payment_id: string
+    razorpay_signature: string
+  }) => Promise<EscrowApiResponse>
+  claimPrize: (input: {
+    hackathonId: string
+    destination: string
+    amount: number
+  }) => Promise<EscrowApiResponse>
   proposePayouts: (
     winners: ProposeWinnerInput[],
     proposalId?: number,
@@ -81,6 +91,24 @@ export function useEscrow(): UseEscrowResult {
   const fundVault = useCallback(
     async (hackathonId: string, amountInr: number) => {
       return run('/api/escrow/fund', { hackathonId, amount: amountInr })
+    },
+    [run],
+  )
+
+  const confirmFund = useCallback(
+    async (checkout: {
+      razorpay_order_id: string
+      razorpay_payment_id: string
+      razorpay_signature: string
+    }) => {
+      return run('/api/escrow/fund/confirm', { ...checkout })
+    },
+    [run],
+  )
+
+  const claimPrize = useCallback(
+    async (input: { hackathonId: string; destination: string; amount: number }) => {
+      return run('/api/escrow/claim', input)
     },
     [run],
   )
@@ -148,6 +176,8 @@ export function useEscrow(): UseEscrowResult {
     lastTxHash,
     clearError,
     fundVault,
+    confirmFund,
+    claimPrize,
     proposePayouts,
     approvePayout,
     executePayout,

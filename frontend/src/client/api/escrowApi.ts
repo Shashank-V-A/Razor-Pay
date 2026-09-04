@@ -6,6 +6,12 @@ export type EscrowApiResponse = {
   success: boolean
   txHash: string
   error: string
+  needsCheckout?: boolean
+  keyId?: string
+  amountPaise?: number
+  orderId?: string
+  amount?: number
+  paymentId?: string
 }
 
 export type EscrowPayout = {
@@ -58,6 +64,12 @@ export async function postEscrow(
     success: Boolean(data.success),
     txHash: typeof data.txHash === 'string' ? data.txHash : '',
     error: typeof data.error === 'string' ? data.error : response.ok ? '' : `HTTP ${response.status}`,
+    needsCheckout: Boolean(data.needsCheckout),
+    keyId: typeof data.keyId === 'string' ? data.keyId : undefined,
+    amountPaise: typeof data.amountPaise === 'number' ? data.amountPaise : undefined,
+    orderId: typeof data.orderId === 'string' ? data.orderId : undefined,
+    amount: typeof data.amount === 'number' ? data.amount : undefined,
+    paymentId: typeof data.paymentId === 'string' ? data.paymentId : undefined,
   }
 }
 

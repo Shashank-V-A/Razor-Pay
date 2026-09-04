@@ -47,6 +47,7 @@ export default function RootLayout({
           if (typeof global === 'undefined') window.global = window;
           try { localStorage.removeItem('prize_vault_theme'); } catch (e) {}
         `}</Script>
+        <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
       </head>
       <body>{children}</body>
     </html>

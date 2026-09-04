@@ -237,7 +237,10 @@ export function participantCount(hackathon: {
 /** Receipt link for a Razorpay payment/payout id (test dashboard when live keys exist). */
 export function payoutReceiptUrl(hash: unknown): string {
   const id = String(hash || '')
-  if (id.startsWith('order_') || id.startsWith('pay_')) {
+  if (id.startsWith('pay_')) {
+    return `https://dashboard.razorpay.com/app/payments/${id}`
+  }
+  if (id.startsWith('order_')) {
     return `https://dashboard.razorpay.com/app/orders/${id}`
   }
   if (id.startsWith('pout_')) {

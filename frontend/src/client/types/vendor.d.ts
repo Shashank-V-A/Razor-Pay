@@ -25,6 +25,12 @@ declare module 'qrcode' {
  * left untouched by the UI rebuild. Only the provider is consumed from
  * TypeScript, so that is all that is declared.
  */
+declare global {
+  interface Window {
+    Razorpay?: new (options: Record<string, unknown>) => { open: () => void }
+  }
+}
+
 declare module '*/context/HolderContext' {
   import type { ReactElement, ReactNode } from 'react'
 

@@ -2,9 +2,13 @@ import { useMemo, useState, useEffect } from 'react'
 import Icon from '../../components/Icon'
 import EventVerifiedBadge from '../../components/EventVerifiedBadge'
 import { Hackathon } from '../../types/hackathon'
-import { useHackathons } from '../../hooks/useHackathons'
+import { useHackathons, usePayoutProposals } from '../../hooks/useHackathons'
 import { celebrateWinnerOnce } from '../../hooks/useWinnerCelebration'
 import { isRegistered, registerForHackathon } from '../utils/registration'
+import { useEscrow } from '../../hooks/useEscrow'
+import { isValidUpiVpa } from '../../constants/escrow'
+import { findWinnerForAccount } from '../../utils/winnerMatch'
+import { getPayoutWorkflowStage, isPayoutReleased } from '../../utils/payoutWorkflow'
 import {
   STATUS_META,
   deriveStatus,
@@ -12,6 +16,7 @@ import {
   formatDateRange,
   formatXlm,
   participantCount,
+  payoutReceiptUrl,
   prizeCurrency,
   prizeTotal,
 } from '../../utils/format'
@@ -26,7 +31,11 @@ export default function ParticipantDashboard({
   onNavigate,
 }: ParticipantDashboardProps) {
   const { hackathons, reload } = useHackathons()
+  const { proposals } = usePayoutProposals()
+  const { claimPrize } = useEscrow()
   const [registeringId, setRegisteringId] = useState<string | null>(null)
+  const [claimingId, setClaimingId] = useState<string | null>(null)
+  const [destinations, setDestinations] = useState<Record<string, string>>({})
   const [notice, setNotice] = useState<{ tone: 'success' | 'danger'; text: string } | null>(null)
 
   const mine = useMemo(
@@ -47,9 +56,7 @@ export default function ParticipantDashboard({
     return mine
       .map((h) => ({
         hackathon: h,
-        win: (h.winners || []).find(
-          (w) => w.payoutAddress?.toLowerCase() === userWallet.toLowerCase(),
-        ),
+        win: findWinnerForAccount(h, userWallet),
       }))
       .filter((x) => x.win)
   }, [mine, userWallet])
@@ -74,6 +81,45 @@ export default function ParticipantDashboard({
       setNotice({ tone: 'danger', text: result.reason })
     }
     setRegisteringId(null)
+  }
+
+  const handleReceive = async (hackathon: Hackathon, amount: number) => {
+    if (!userWallet) return
+    const destination = (destinations[hackathon.id] || '').trim()
+    if (!isValidUpiVpa(destination) && !/^\d{9,18}$/.test(destination)) {
+      setNotice({
+        tone: 'danger',
+        text: 'Enter a UPI ID (name@okaxis) or bank account number. Checkout is only for sponsors.',
+      })
+      return
+    }
+    setClaimingId(hackathon.id)
+    setNotice(null)
+    const result = await claimPrize({
+      hackathonId: hackathon.id,
+      destination,
+      amount,
+    })
+    if (result.success) {
+      try {
+        localStorage.setItem(`pv_prize_claim_${hackathon.id}_${userWallet.toLowerCase()}`, result.txHash)
+      } catch {
+        /* ignore */
+      }
+      const href = payoutReceiptUrl(result.txHash)
+      setNotice({
+        tone: 'success',
+        text: result.txHash.startsWith('pout_queued')
+          ? `Payout queued (${result.txHash}). RazorpayX Current Account is needed for a live bank credit.`
+          : `Payout submitted (${result.txHash}).`,
+      })
+      if (href.startsWith('http')) {
+        window.open(href, '_blank', 'noopener,noreferrer')
+      }
+    } else {
+      setNotice({ tone: 'danger', text: result.error || 'Could not send payout.' })
+    }
+    setClaimingId(null)
   }
 
   if (!userWallet) {
@@ -139,6 +185,106 @@ export default function ParticipantDashboard({
         </div>
       </div>
 
+      {myWinnings.length > 0 ? (
+        <section className="pv-card">
+          <div className="pv-card__header">
+            <div>
+              <h3 className="pv-card__title">Receive prize</h3>
+              <p className="pv-card__subtitle">
+                Sponsors pay the vault with Razorpay Checkout. You receive INR on UPI or IMPS —
+                you do not pay at Checkout.
+              </p>
+            </div>
+          </div>
+          <div className="pv-card__body">
+            <div className="pv-stack">
+              {myWinnings.map(({ hackathon: h, win }) => {
+                const stage = getPayoutWorkflowStage(h, proposals)
+                const released = isPayoutReleased(h, proposals)
+                let savedReceipt = ''
+                try {
+                  savedReceipt =
+                    localStorage.getItem(`pv_prize_claim_${h.id}_${userWallet.toLowerCase()}`) || ''
+                } catch {
+                  savedReceipt = ''
+                }
+                const defaultDest = isValidUpiVpa(win?.payoutAddress || '')
+                  ? String(win?.payoutAddress)
+                  : ''
+                const dest = destinations[h.id] ?? defaultDest
+                const canClaim = Boolean(win) && stage === 'ready_to_release' && !released && !savedReceipt
+                return (
+                  <div key={h.id} className="pv-dl" style={{ marginBottom: 'var(--pv-space-6)' }}>
+                    <div className="pv-dl__item">
+                      <dt className="pv-dl__key">{h.name}</dt>
+                      <dd className="pv-dl__val">
+                        ₹{formatXlm(win?.prizeAmount)} · {win?.prizeTier || 'Winner'}
+                      </dd>
+                    </div>
+                    {released || savedReceipt ? (
+                      <p className="pv-muted" style={{ fontSize: 'var(--pv-text-sm)' }}>
+                        Payout sent
+                        {savedReceipt ? ` (${savedReceipt})` : ''}. This is a receive transfer, not a
+                        Checkout payment.
+                      </p>
+                    ) : canClaim ? (
+                      <form
+                        onSubmit={(e) => {
+                          e.preventDefault()
+                          void handleReceive(h, Number(win?.prizeAmount) || 0)
+                        }}
+                      >
+                        <div className="pv-field">
+                          <label className="pv-field__label" htmlFor={`claim-dest-${h.id}`}>
+                            UPI or bank account
+                          </label>
+                          <input
+                            id={`claim-dest-${h.id}`}
+                            className="pv-input"
+                            placeholder="name@okaxis"
+                            value={dest}
+                            onChange={(e) =>
+                              setDestinations((prev) => ({ ...prev, [h.id]: e.target.value }))
+                            }
+                            disabled={claimingId === h.id}
+                          />
+                        </div>
+                        <button
+                          type="submit"
+                          className="pv-btn pv-btn--primary"
+                          style={{ marginTop: 'var(--pv-space-4)' }}
+                          disabled={claimingId === h.id}
+                        >
+                          {claimingId === h.id ? (
+                            <>
+                              <span className="pv-btn__spinner" />
+                              Sending payout
+                            </>
+                          ) : (
+                            <>
+                              <Icon name="wallet" size={15} />
+                              Receive ₹{formatXlm(win?.prizeAmount)}
+                            </>
+                          )}
+                        </button>
+                      </form>
+                    ) : (
+                      <p className="pv-muted" style={{ fontSize: 'var(--pv-text-sm)' }}>
+                        {stage === 'awaiting_sponsor'
+                          ? 'Waiting for the sponsor to co-approve the payout.'
+                          : stage === 'winners_selected'
+                            ? 'Waiting for the organizer to propose the payout.'
+                            : 'Payout is not ready yet. Dual approval must complete first.'}
+                      </p>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
       <section className="pv-card">
         <div className="pv-card__header">
           <div>
@@ -183,9 +329,7 @@ export default function ParticipantDashboard({
                     const participant = h.participants?.find(
                       (p) => p.payoutAddress?.toLowerCase() === userWallet.toLowerCase(),
                     )
-                    const win = (h.winners || []).find(
-                      (w) => w.payoutAddress?.toLowerCase() === userWallet.toLowerCase(),
-                    )
+                    const win = findWinnerForAccount(h, userWallet)
                     return (
                       <tr key={h.id}>
                         <td data-label="Event">

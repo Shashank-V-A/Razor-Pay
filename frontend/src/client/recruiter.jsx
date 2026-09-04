@@ -17,6 +17,7 @@ import {
 import { fetchHackathons, fetchProposals, updateHackathon } from './services/hackathonApi'
 import { syncWalletSession } from './services/sessionApi'
 import { useEscrow } from './hooks/useEscrow'
+import { openRazorpayCheckout } from './utils/openRazorpayCheckout'
 import { INR_VAULT_ID } from './constants/escrow'
 import {
   escrowBalanceXlm,
@@ -68,7 +69,7 @@ function SponsorConsole() {
   const [fundingError, setFundingError] = useState('')
   const [isApproving, setIsApproving] = useState(false)
   const [approveError, setApproveError] = useState('')
-  const { approvePayout, fundVault } = useEscrow()
+  const { approvePayout, fundVault, confirmFund } = useEscrow()
   const { unread, dismiss } = useAgentInbox(senderAddress)
 
   const sponsorName = 'Hackathon Sponsor Inc.'
@@ -235,7 +236,23 @@ function SponsorConsole() {
       if (!fundResult.success) {
         throw new Error(fundResult.error || 'Razorpay fund failed')
       }
-      const txHash = fundResult.txHash
+
+      let txHash = fundResult.txHash
+      if (fundResult.needsCheckout) {
+        const paid = await openRazorpayCheckout({
+          key: fundResult.keyId || '',
+          orderId: fundResult.orderId || fundResult.txHash,
+          amountPaise: fundResult.amountPaise,
+          name: 'PrizeVault',
+          description: `Prize escrow · ${hackRow.name}`,
+          prefillEmail: senderAddress,
+        })
+        const confirmed = await confirmFund(paid)
+        if (!confirmed.success) {
+          throw new Error(confirmed.error || 'Could not verify Razorpay payment')
+        }
+        txHash = confirmed.paymentId || confirmed.txHash
+      }
 
       const nextFunding = Number(hackRow.sponsorFundingXlm || 0) + numericAmount
       const nextRow = {
@@ -268,7 +285,7 @@ function SponsorConsole() {
           timestamp: 'Just now',
           icon: 'send',
           tone: 'success',
-          title: sponsorFunded ? 'Prize pool fully funded' : 'INR vault funded',
+          title: sponsorFunded ? 'Prize pool fully funded' : 'Razorpay payment captured',
           description: `Attributed ₹${formatXlm(numericAmount)} to ${hackRow.name} (₹${formatXlm(nextFunding)} / ₹${formatXlm(prizeTotal(hackRow))}).`,
           txHash,
         },

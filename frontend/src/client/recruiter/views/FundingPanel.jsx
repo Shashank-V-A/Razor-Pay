@@ -120,7 +120,8 @@ export default function FundingPanel({
         </div>
 
         <p className="pv-muted" style={{ marginBottom: 'var(--pv-space-7)', fontSize: 'var(--pv-text-sm)' }}>
-          Each event has its own attributed INR balance in the dual-control vault.
+          You pay the prize pool here with Razorpay Checkout. Winners later receive INR to UPI or
+          bank — they never open Checkout.
         </p>
 
         <dl className="pv-dl" style={{ marginBottom: 'var(--pv-space-7)' }}>
@@ -183,8 +184,9 @@ export default function FundingPanel({
                 <span className="pv-input-group__affix">INR</span>
               </div>
               <span className="pv-field__hint">
-                Defaults to the remaining ₹{formatXlm(remaining)} for this event. Razorpay test
-                mode records the deposit into the dual-control vault.
+                Opens Razorpay Checkout. Test card: 4111 1111 1111 1111, any future expiry, any
+                CVV, any 3D Secure password. A paid order then appears on Razorpay Orders and
+                Payments.
               </span>
             </div>
 
@@ -193,12 +195,12 @@ export default function FundingPanel({
                 {isFunding ? (
                   <>
                     <span className="pv-btn__spinner" />
-                    Locking INR
+                    Opening Checkout
                   </>
                 ) : (
                   <>
                     <Icon name="send" size={15} />
-                    Fund escrow
+                    Pay with Razorpay
                   </>
                 )}
               </button>

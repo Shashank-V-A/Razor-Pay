@@ -1,3 +1,4 @@
+import { createHmac } from "node:crypto";
 import {
   getRazorpayKeyId,
   getRazorpayKeySecret,
@@ -64,6 +65,21 @@ export async function createOrder(rupees: number, receipt: string): Promise<Razo
     amountPaise,
     currency: 'INR',
   }
+}
+
+export function verifyCheckoutSignature(options: {
+  orderId: string
+  paymentId: string
+  signature: string
+}): boolean {
+  const expected = createHmac('sha256', getRazorpayKeySecret())
+    .update(`${options.orderId}|${options.paymentId}`)
+    .digest('hex')
+  return expected === options.signature
+}
+
+export async function fetchPayment(paymentId: string): Promise<Record<string, unknown>> {
+  return razorpayFetch(`/v1/payments/${encodeURIComponent(paymentId)}`, { method: 'GET' })
 }
 
 export async function createPayout(options: {

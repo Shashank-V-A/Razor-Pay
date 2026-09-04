@@ -1,12 +1,12 @@
-import { INR_VAULT_ID } from "./config";
-import { createOrder, createPayout } from "./razorpayClient";
+import { INR_VAULT_ID, getRazorpayKeyId, isRazorpayLiveConfigured } from "./config";
+import { createOrder, createPayout, fetchPayment, verifyCheckoutSignature } from "./razorpayClient";
 import {
   complianceRecord,
   evaluateGit,
   evaluatePayment,
   type WinnerLike,
 } from "../agent/evaluators";
-import { isValidPayoutDestination } from "@/client/constants/escrow";
+import { isValidPayoutDestination, isValidUpiVpa } from "@/client/constants/escrow";
 
 export interface ApiSuccess {
   success: true;
@@ -14,6 +14,12 @@ export interface ApiSuccess {
   error: "";
   vaultId?: string;
   gates?: unknown;
+  needsCheckout?: boolean;
+  keyId?: string;
+  amountPaise?: number;
+  orderId?: string;
+  amount?: number;
+  paymentId?: string;
 }
 
 export interface ApiFailure {
@@ -157,7 +163,70 @@ export async function handleFund(body: Record<string, unknown>): Promise<ApiResp
     }
     const hackathonId = String(body.hackathonId || body.escrowId || "vault");
     const order = await createOrder(amount, `fund_${hackathonId}`.slice(0, 40));
-    return { ...ok(order.id), amount };
+    const checkout = order.mode === "razorpay" && isRazorpayLiveConfigured();
+    return {
+      ...ok(order.id),
+      amount,
+      needsCheckout: checkout,
+      keyId: checkout ? getRazorpayKeyId() : undefined,
+      amountPaise: order.amountPaise,
+      orderId: order.id,
+    };
+  } catch (error) {
+    return fail(error);
+  }
+}
+
+export async function handleFundConfirm(
+  body: Record<string, unknown>,
+): Promise<ApiResponse & { amount?: number }> {
+  try {
+    const orderId = String(body.razorpay_order_id || body.orderId || "").trim();
+    const paymentId = String(body.razorpay_payment_id || body.paymentId || "").trim();
+    const signature = String(body.razorpay_signature || body.signature || "").trim();
+    if (!orderId || !paymentId || !signature) {
+      throw new Error("Checkout response is incomplete");
+    }
+    if (!verifyCheckoutSignature({ orderId, paymentId, signature })) {
+      throw new Error("Razorpay signature check failed");
+    }
+    const payment = await fetchPayment(paymentId);
+    const status = String(payment.status || "");
+    if (status !== "captured" && status !== "authorized") {
+      throw new Error(`Payment is ${status || "not captured"}`);
+    }
+    if (String(payment.order_id || "") !== orderId) {
+      throw new Error("Payment does not belong to this order");
+    }
+    const amountPaise = Number(payment.amount);
+    return {
+      ...ok(paymentId),
+      amount: Number.isFinite(amountPaise) ? amountPaise / 100 : undefined,
+      paymentId,
+      orderId,
+    };
+  } catch (error) {
+    return fail(error);
+  }
+}
+
+export async function handleClaim(body: Record<string, unknown>): Promise<ApiResponse> {
+  try {
+    const destination = String(body.destination || body.payoutAddress || "").trim();
+    const amount = Number(body.amount ?? body.prizeAmount);
+    const hackathonId = String(body.hackathonId || "");
+    if (!isValidUpiVpa(destination) && !/^\d{9,18}$/.test(destination)) {
+      throw new Error("Enter a UPI ID (name@okaxis) or 9–18 digit bank account — winners do not use Checkout");
+    }
+    if (!Number.isFinite(amount) || amount <= 0) {
+      throw new Error("Prize amount must be greater than 0");
+    }
+    const created = await createPayout({
+      rupees: amount,
+      destination,
+      idempotencyKey: `claim_${hackathonId}_${destination}`.slice(0, 48),
+    });
+    return ok(created.id);
   } catch (error) {
     return fail(error);
   }
