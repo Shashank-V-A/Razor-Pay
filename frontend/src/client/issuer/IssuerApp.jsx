@@ -7,6 +7,7 @@ import { prizeTotal } from '../utils/format'
 import { useHackathons } from '../hooks/useHackathons'
 import { broadcastHackathonsDatasetChanged } from '../utils/hackathonSync'
 import { saveHackathonsToStorage } from '../holder/utils/roleDetection'
+import { dropLegacyStellarHackathons } from '../utils/legacyWeb3Data'
 import { syncWalletSession } from '../services/sessionApi'
 import { getIssuerAuditLogs } from '../utils/issuerAuditLog'
 import Header from './components/Header'
@@ -38,13 +39,13 @@ function initHackathonData() {
     const parsed = JSON.parse(existing)
     if (!Array.isArray(parsed)) return
 
-    const fixed = parsed
-      .map((h) => ({
+    const fixed = dropLegacyStellarHackathons(
+      parsed.map((h) => ({
         ...h,
         participants: h.participants || [],
         participantCount: h.participants?.length || 0,
-      }))
-      .filter((h) => !(h.id === 'hack_001' && h.name === "RIFT '26"))
+      })),
+    )
 
     // Only write when something actually changed, so a mount is not a mutation.
     if (JSON.stringify(fixed) !== existing) {

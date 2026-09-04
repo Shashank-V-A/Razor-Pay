@@ -8,6 +8,7 @@ import {
   rowToHackathon,
 } from '@/lib/supabase/mappers'
 import type { Hackathon } from '@/client/types/hackathon'
+import { dropLegacyStellarHackathons } from '@/client/utils/legacyWeb3Data'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -33,7 +34,9 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: error.message, hackathons: [] }, { status: 500 })
     }
 
-    const hackathons = (data || []).map((row) => rowToHackathon(row))
+    const hackathons = dropLegacyStellarHackathons(
+      (data || []).map((row) => rowToHackathon(row)),
+    )
     return NextResponse.json({ hackathons, source: 'supabase' })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Failed to load hackathons'

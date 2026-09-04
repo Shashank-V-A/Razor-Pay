@@ -7,6 +7,10 @@ import {
 import { broadcastHackathonsDatasetChanged } from '../utils/hackathonSync'
 import { enrichHackathonLocation } from '../utils/hackathonGlobe'
 import { enrichHackathonFunding } from '../utils/format'
+import {
+  dropLegacyStellarHackathons,
+  dropLegacyStellarProposals,
+} from '../utils/legacyWeb3Data'
 
 type HackathonExtras = Hackathon & {
   sponsorFundingXlm?: number
@@ -18,7 +22,7 @@ type HackathonExtras = Hackathon & {
   dbId?: string
 }
 
-let hackathonsFetchInFlight: Promise<HackathonExtras[]> | null = null
+let hackathonsFetchInFlight: Map<string, Promise<HackathonExtras[]>> = new Map()
 
 async function parseJson<T>(res: Response): Promise<T> {
   const data = (await res.json()) as T
@@ -26,7 +30,13 @@ async function parseJson<T>(res: Response): Promise<T> {
 }
 
 function normalizeHackathons(hackathons: HackathonExtras[]): HackathonExtras[] {
-  return hackathons.map((h) => enrichHackathonFunding(enrichHackathonLocation(h)))
+  return dropLegacyStellarHackathons(
+    hackathons.map((h) => enrichHackathonFunding(enrichHackathonLocation(h))),
+  )
+}
+
+function fetchKey(filters?: { organizer?: string; sponsor?: string }): string {
+  return `${filters?.organizer || ''}|${filters?.sponsor || ''}`
 }
 
 /** Load hackathons from Supabase API, falling back to localStorage. */
@@ -34,9 +44,11 @@ export async function fetchHackathons(filters?: {
   organizer?: string
   sponsor?: string
 }): Promise<HackathonExtras[]> {
-  if (hackathonsFetchInFlight) return hackathonsFetchInFlight
+  const key = fetchKey(filters)
+  const existing = hackathonsFetchInFlight.get(key)
+  if (existing) return existing
 
-  hackathonsFetchInFlight = (async () => {
+  const pending = (async () => {
     try {
       const params = new URLSearchParams()
       if (filters?.organizer) params.set('organizer', filters.organizer)
@@ -61,10 +73,11 @@ export async function fetchHackathons(filters?: {
     }
     return normalizeHackathons(getHackathonsFromStorage() as HackathonExtras[])
   })().finally(() => {
-    hackathonsFetchInFlight = null
+    hackathonsFetchInFlight.delete(key)
   })
 
-  return hackathonsFetchInFlight
+  hackathonsFetchInFlight.set(key, pending)
+  return pending
 }
 
 export async function createHackathon(
@@ -234,27 +247,29 @@ export async function fetchProposals(): Promise<Record<string, unknown>[]> {
     if (!res.ok) throw new Error('API error')
     const data = await parseJson<{ proposals?: Record<string, unknown>[]; source?: string }>(res)
     if (data.source === 'supabase' && Array.isArray(data.proposals)) {
+      const cleaned = dropLegacyStellarProposals(data.proposals)
       try {
-        localStorage.setItem('prize_vault_payout_proposals', JSON.stringify(data.proposals))
+        localStorage.setItem('prize_vault_payout_proposals', JSON.stringify(cleaned))
       } catch {
         // ignore
       }
-      return data.proposals
+      return cleaned
     }
   } catch {
     // fall through
   }
   try {
     const stored = localStorage.getItem('prize_vault_payout_proposals')
-    return stored ? JSON.parse(stored) : []
+    return dropLegacyStellarProposals(stored ? JSON.parse(stored) : [])
   } catch {
     return []
   }
 }
 
 export async function saveAllProposals(proposals: Record<string, unknown>[]): Promise<void> {
+  const cleaned = dropLegacyStellarProposals(proposals)
   try {
-    localStorage.setItem('prize_vault_payout_proposals', JSON.stringify(proposals))
+    localStorage.setItem('prize_vault_payout_proposals', JSON.stringify(cleaned))
   } catch {
     // ignore
   }
@@ -263,7 +278,7 @@ export async function saveAllProposals(proposals: Record<string, unknown>[]): Pr
     const res = await fetch('/api/proposals', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ proposals }),
+      body: JSON.stringify({ proposals: cleaned }),
     })
     const data = (await res.json()) as { success?: boolean; error?: string }
     if (!res.ok || data.success === false) {

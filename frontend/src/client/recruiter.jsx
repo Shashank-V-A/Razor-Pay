@@ -24,7 +24,8 @@ import {
   isEscrowFullyFunded,
   prizeTotal,
 } from './utils/format'
-import { canSponsorApproveProposal } from './utils/payoutWorkflow'
+import { hackathonVisibleToSponsor } from './utils/sponsorPortalFilter'
+import { canSponsorApproveProposal, isPayoutReleased } from './utils/payoutWorkflow'
 import { useAgentInbox } from './hooks/useAgentInbox'
 import AgentInbox from './components/AgentInbox'
 import EscrowOverviewPanel from './recruiter/views/EscrowOverviewPanel'
@@ -34,17 +35,6 @@ import BudgetSummaryPanel from './recruiter/views/BudgetSummaryPanel'
 import ActivityHistoryPanel from './recruiter/views/ActivityHistoryPanel'
 import SponsorProfilePanel from './recruiter/views/SponsorProfilePanel'
 import './styles/index.css'
-
-const HACKATHON_STORAGE_KEY = 'prize_vault_hackathons'
-
-function getHackathonsFromStorage() {
-  try {
-    const stored = localStorage.getItem(HACKATHON_STORAGE_KEY)
-    return stored ? JSON.parse(stored) : []
-  } catch (_) {
-    return []
-  }
-}
 
 function SponsorConsole() {
   useEffect(() => {
@@ -89,14 +79,18 @@ function SponsorConsole() {
   useEffect(() => {
     const refresh = async () => {
       const [list, propList] = await Promise.all([fetchHackathons(), fetchProposals()])
-      setHackathons(list)
-      setProposals(propList)
+      const visible = list.filter((h) => hackathonVisibleToSponsor(h, senderAddress))
+      const ids = new Set(visible.map((h) => h.id))
+      setHackathons(visible)
+      setProposals(
+        propList.filter((p) => ids.has(String(p.hackathonId || ''))),
+      )
     }
     refresh()
     return subscribeHackathonsDatasetChanged(() => {
       void refresh()
     }, ['prize_vault_payout_proposals'])
-  }, [])
+  }, [senderAddress])
 
   const escrows = useMemo(
     () =>
@@ -173,10 +167,19 @@ function SponsorConsole() {
   }, [proposals, hackathons])
 
   const budgetStats = useMemo(() => {
-    const committed = escrows.reduce((sum, e) => sum + e.balanceAlgo, 0)
+    const releasedHackathonIds = new Set(
+      proposals
+        .filter((p) => p.status === 'executed')
+        .map((p) => String(p.hackathonId || '')),
+    )
+    const committed = escrows.reduce((sum, e) => sum + Number(e.balanceAlgo || 0), 0)
     const locked = escrows
-      .filter((e) => e.status !== 'Released')
-      .reduce((sum, e) => sum + e.balanceAlgo, 0)
+      .filter((e) => {
+        const hack = e.hackathon
+        if (!hack) return Number(e.balanceAlgo || 0) > 0
+        return !isPayoutReleased(hack, proposals) && !releasedHackathonIds.has(e.id)
+      })
+      .reduce((sum, e) => sum + Number(e.balanceAlgo || 0), 0)
     const released = proposals
       .filter((p) => p.status === 'executed')
       .reduce(

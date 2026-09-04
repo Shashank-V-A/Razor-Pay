@@ -1,6 +1,7 @@
 import { UserRole } from '../../types/holder'
 import { Hackathon } from '../../types/hackathon'
 import { getPayoutProposals, savePayoutProposals } from '../../utils/payoutProposalsStorage'
+import { dropLegacyStellarHackathons } from '../../utils/legacyWeb3Data'
 import {
   broadcastHackathonsDatasetChanged,
   PRIZE_VAULT_HACKATHONS_KEY,
@@ -72,7 +73,15 @@ export function getHackathonsFromStorage(): Hackathon[] {
     if (stored) {
       const parsed = JSON.parse(stored)
       if (Array.isArray(parsed)) {
-        return parsed.filter((h) => !(h.id === 'hack_001' && h.name === "RIFT '26"))
+        const cleaned = dropLegacyStellarHackathons(parsed)
+        if (cleaned.length !== parsed.length) {
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(cleaned))
+          } catch {
+            // ignore
+          }
+        }
+        return cleaned
       }
     }
   } catch (_) {
@@ -95,7 +104,7 @@ export function saveHackathonsToStorage(
 ): void {
   const shouldBroadcast = options.broadcast !== false
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(hackathons))
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(dropLegacyStellarHackathons(hackathons)))
     if (typeof window !== 'undefined' && shouldBroadcast) {
       window.dispatchEvent(new CustomEvent('prize_vault_hackathons_changed'))
       broadcastHackathonsDatasetChanged()

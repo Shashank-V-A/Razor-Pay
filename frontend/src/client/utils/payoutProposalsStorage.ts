@@ -2,6 +2,7 @@
  * Payout proposals — persisted to Supabase via API with localStorage cache.
  */
 
+import { dropLegacyStellarProposals } from './legacyWeb3Data'
 import { broadcastHackathonsDatasetChanged } from './hackathonSync'
 import { saveAllProposals, fetchProposals } from '../services/hackathonApi'
 
@@ -12,7 +13,17 @@ export function getPayoutProposals(): Record<string, unknown>[] {
     const stored = localStorage.getItem(PROPOSALS_STORAGE_KEY)
     if (stored) {
       const parsed = JSON.parse(stored)
-      if (Array.isArray(parsed)) return parsed
+      if (Array.isArray(parsed)) {
+        const cleaned = dropLegacyStellarProposals(parsed)
+        if (cleaned.length !== parsed.length) {
+          try {
+            localStorage.setItem(PROPOSALS_STORAGE_KEY, JSON.stringify(cleaned))
+          } catch {
+            // ignore
+          }
+        }
+        return cleaned
+      }
     }
   } catch (_) {}
   return []

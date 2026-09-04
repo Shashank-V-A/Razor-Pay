@@ -6,6 +6,7 @@ import { syncExecutedPayouts } from '@/lib/supabase/syncExecutedPayouts'
 import { coerceUuid } from '@/lib/supabase/ids'
 import { findHackathonById } from '@/lib/supabase/registerParticipant'
 import { errorMessage, formatSupabaseApiError } from '@/lib/supabase/errors'
+import { dropLegacyStellarProposals } from '@/client/utils/legacyWeb3Data'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -98,7 +99,7 @@ export async function GET() {
     }
 
     return NextResponse.json({
-      proposals: (data || []).map((row) => rowToProposal(row)),
+      proposals: dropLegacyStellarProposals((data || []).map((row) => rowToProposal(row))),
       source: 'supabase',
     })
   } catch (err) {

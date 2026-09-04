@@ -7,7 +7,7 @@ const TILES = [
     key: 'committed',
     label: 'Committed',
     icon: 'wallet',
-    meta: 'Across all hackathons you fund',
+    meta: 'INR you deposited for your events',
   },
   {
     key: 'locked',

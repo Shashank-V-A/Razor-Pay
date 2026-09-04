@@ -26,7 +26,7 @@ export function isValidPayoutDestination(value: string): boolean {
   return isValidEmail(v)
 }
 
-/** @deprecated use isValidAccountId */
-export function isValidStellarAddress(value: string): boolean {
-  return isValidAccountId(value)
+/** Leftover Stellar public keys from the previous Web3 build. */
+export function isLegacyStellarGAddress(value: string): boolean {
+  return /^G[A-Z2-7]{55}$/.test((value || '').trim())
 }
