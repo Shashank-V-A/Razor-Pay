@@ -1,10 +1,22 @@
-import type { AgentNotification } from '../types/hackathon'
+import type { AgentNotification, AgentTickResult } from '../types/hackathon'
 
-export async function tickAgent(): Promise<void> {
+export type { AgentTickResult }
+
+export async function tickAgent(): Promise<AgentTickResult | null> {
   try {
-    await fetch('/api/agent/tick', { method: 'POST' })
+    const res = await fetch('/api/agent/tick', { method: 'POST' })
+    const data = (await res.json()) as Partial<AgentTickResult>
+    if (!data || typeof data !== 'object') return null
+    return {
+      ok: Boolean(data.ok),
+      ranAt: typeof data.ranAt === 'string' ? data.ranAt : new Date().toISOString(),
+      source: data.source === 'supabase' ? 'supabase' : 'none',
+      actions: Array.isArray(data.actions) ? data.actions : [],
+      summary: typeof data.summary === 'string' ? data.summary : '',
+      error: typeof data.error === 'string' ? data.error : undefined,
+    }
   } catch {
-    // Dashboard still works if the watchdog is down.
+    return null
   }
 }
 

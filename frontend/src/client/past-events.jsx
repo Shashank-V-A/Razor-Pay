@@ -6,7 +6,7 @@ import AddressChip, { truncateAddress } from './components/AddressChip'
 import { getHackathonsFromStorage } from './holder/utils/roleDetection'
 import { subscribeHackathonsDatasetChanged } from './utils/hackathonSync'
 import { enrichHackathonLocation } from './utils/hackathonGlobe'
-import { enrichHackathonFunding } from './utils/format'
+import { enrichHackathonFunding, payoutStatusCopy } from './utils/format'
 import { fetchHackathons, fetchProposals } from './services/hackathonApi'
 import {
   deriveStatus,
@@ -144,7 +144,7 @@ function PastEventCard({ hackathon, proposal }) {
           ) : (
             <p className="pv-dim">
               {hackathon.payoutExecuted
-                ? 'Payout marked executed, but no transaction hash is stored yet.'
+                ? payoutStatusCopy(hackathon.payoutTxHash)
                 : 'Payout not executed yet — certificates appear after release.'}
             </p>
           )}

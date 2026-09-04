@@ -53,12 +53,12 @@ export const WORKFLOW_STAGE_META: Record<
   ready_to_release: {
     label: 'Ready to release',
     badge: 'pv-badge--accent',
-    description: 'Both sides approved. The orchestration agent executes Razorpay INR payouts and posts receipt ids.',
+    description: 'Both sides approved. The agent runs payment and git gates, then posts a receipt (RazorpayX payout or queued placeholder).',
   },
   released: {
     label: 'Released',
     badge: 'pv-badge--success',
-    description: 'Prize funds were sent to winners in INR.',
+    description: 'Dual approval completed. If the receipt is pout_queued_…, payout is queued (no RazorpayX) and winners did not receive bank INR.',
   },
 }
 

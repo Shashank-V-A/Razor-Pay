@@ -29,6 +29,7 @@ import { hackathonVisibleToSponsor } from './utils/sponsorPortalFilter'
 import { canSponsorApproveProposal, isPayoutReleased } from './utils/payoutWorkflow'
 import { useAgentInbox } from './hooks/useAgentInbox'
 import AgentInbox from './components/AgentInbox'
+import AgentConsole from './components/AgentConsole'
 import EscrowOverviewPanel from './recruiter/views/EscrowOverviewPanel'
 import FundingPanel from './recruiter/views/FundingPanel'
 import ReleaseApprovalsPanel from './recruiter/views/ReleaseApprovalsPanel'
@@ -70,7 +71,7 @@ function SponsorConsole() {
   const [isApproving, setIsApproving] = useState(false)
   const [approveError, setApproveError] = useState('')
   const { approvePayout, fundVault, confirmFund } = useEscrow()
-  const { unread, dismiss } = useAgentInbox(senderAddress)
+  const { unread, dismiss, tickResult, tickBusy, reload: reloadInbox } = useAgentInbox(senderAddress)
 
   const sponsorName = 'Hackathon Sponsor Inc.'
   const defaultWallet = senderAddress
@@ -424,8 +425,8 @@ function SponsorConsole() {
             <h1 className="pv-page-header__title">Sponsor console</h1>
             <p className="pv-page-header__desc">
               Fund prize pools first, then co-approve winner payouts after the organizer proposes
-              them. Nothing is released until both sides approve. After that the orchestration agent
-              executes Razorpay INR payouts and posts receipt ids.
+              them. Dual-control is human. After both approve, the agent runs payment/git gates and
+              posts a receipt — pout_queued_… means queued (no RazorpayX), not a bank credit.
             </p>
           </div>
           <div className="pv-page-header__actions">
@@ -460,6 +461,13 @@ function SponsorConsole() {
               else document.getElementById('approvals')?.scrollIntoView({ behavior: 'smooth' })
             }}
             onDismiss={dismiss}
+          />
+
+          <AgentConsole
+            tick={tickResult}
+            busy={tickBusy}
+            onRun={() => void reloadInbox()}
+            hackathons={hackathons}
           />
 
           <BudgetSummaryPanel stats={budgetStats} />

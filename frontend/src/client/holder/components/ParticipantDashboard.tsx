@@ -17,6 +17,7 @@ import {
   formatXlm,
   participantCount,
   payoutReceiptUrl,
+  payoutStatusCopy,
   prizeCurrency,
   prizeTotal,
 } from '../../utils/format'
@@ -223,9 +224,9 @@ export default function ParticipantDashboard({
                     </div>
                     {released || savedReceipt ? (
                       <p className="pv-muted" style={{ fontSize: 'var(--pv-text-sm)' }}>
-                        Payout sent
-                        {savedReceipt ? ` (${savedReceipt})` : ''}. This is a receive transfer, not a
-                        Checkout payment.
+                        {savedReceipt || h.payoutTxHash
+                          ? payoutStatusCopy(savedReceipt || h.payoutTxHash)
+                          : 'Payout marked released. This is a receive transfer, not Checkout.'}
                       </p>
                     ) : canClaim ? (
                       <form

@@ -18,7 +18,7 @@ export default function AgentInbox({
       {unread.map((notice) => (
         <div className="pv-alert pv-alert--accent" key={notice.id}>
           <span className="pv-alert__icon">
-            <Icon name={notice.stage === 'released' ? 'send' : 'clock'} size={16} />
+            <Icon name={notice.stage === 'released' ? 'send' : notice.stage === 'funding' ? 'lock' : 'clock'} size={16} />
           </span>
           <div className="pv-alert__content">
             <p className="pv-alert__title">{notice.title}</p>

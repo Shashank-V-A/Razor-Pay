@@ -1,11 +1,7 @@
 import { isValidPayoutDestination } from '@/client/constants/escrow'
+import type { GateResult } from '@/client/types/hackathon'
 
-export type GateResult = {
-  ok: boolean
-  code: 'PAYMENT_OK' | 'PAYMENT_BLOCK' | 'GIT_OK' | 'GIT_SKIP' | 'GIT_BLOCK'
-  detail: string
-  score?: number
-}
+export type { GateResult }
 
 export type WinnerLike = {
   payoutAddress?: string

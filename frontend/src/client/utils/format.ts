@@ -235,6 +235,28 @@ export function participantCount(hackathon: {
 }
 
 /** Receipt link for a Razorpay payment/payout id (test dashboard when live keys exist). */
+export function isQueuedPayoutReceipt(hash: unknown): boolean {
+  const id = String(hash || '')
+  return id.startsWith('pout_queued_') || id.startsWith('pout_mock_')
+}
+
+export function payoutStatusCopy(hash: unknown): string {
+  const id = String(hash || '')
+  if (isQueuedPayoutReceipt(id)) {
+    return 'Payout queued (no RazorpayX). Dual approval finished; winners did not receive bank INR.'
+  }
+  if (id.startsWith('pout_')) {
+    return 'RazorpayX payout submitted. Confirm on the Payouts tab in RazorpayX Test.'
+  }
+  if (id.startsWith('pay_')) {
+    return 'Razorpay payment captured (sponsor inbound).'
+  }
+  if (id.startsWith('order_')) {
+    return 'Razorpay order created. Pay in Checkout to capture it.'
+  }
+  return 'Dual approval completed. Check the receipt id on this event.'
+}
+
 export function payoutReceiptUrl(hash: unknown): string {
   const id = String(hash || '')
   if (id.startsWith('pay_')) {

@@ -15,11 +15,14 @@ import {
   formatRelative,
   formatXlm,
   participantCount,
+  payoutStatusCopy,
   prizeCurrency,
   prizeTotal,
   stellarAccountUrl,
 } from '../../utils/format'
 import { getPayoutWorkflowStage, WORKFLOW_STAGE_META } from '../../utils/payoutWorkflow'
+import { AgentGates } from '../../components/AgentConsole'
+import { findWinnerForAccount } from '../../utils/winnerMatch'
 
 const TIMELINE_STORAGE_KEY = 'prize_vault_hackathon_timelines'
 
@@ -68,11 +71,7 @@ export default function EventDetail({
 
   const myWinner = useMemo(() => {
     if (!hackathon || !userWallet) return null
-    return (
-      (hackathon.winners || []).find(
-        (w) => w.payoutAddress?.toLowerCase() === userWallet.toLowerCase(),
-      ) || null
-    )
+    return findWinnerForAccount(hackathon, userWallet) || null
   }, [hackathon, userWallet])
 
   useWinnerCelebration(
@@ -179,8 +178,11 @@ export default function EventDetail({
               <dd className="pv-dl__val">
                 <span className={`pv-badge ${payoutMeta.badge}`.trim()}>{payoutMeta.label}</span>
                 <p className="pv-dim" style={{ marginTop: 'var(--pv-space-2)', maxWidth: '48ch' }}>
-                  {payoutMeta.description}
+                  {payoutStage === 'released'
+                    ? payoutStatusCopy(hackathon.payoutTxHash || hackathon.agent?.lastReceipt)
+                    : payoutMeta.description}
                 </p>
+                {payoutStage === 'released' ? <AgentGates gates={hackathon.agent?.gates} /> : null}
               </dd>
             </div>
             <div className="pv-dl__item">
@@ -264,7 +266,9 @@ export default function EventDetail({
                   You won {myWinner.prizeTier} 🎉
                 </h3>
                 <p className="pv-card__subtitle">
-                  Payout goes to your registered address once both parties approve.
+                  {hackathon.payoutExecuted
+                    ? payoutStatusCopy(hackathon.payoutTxHash || hackathon.agent?.lastReceipt)
+                    : 'Payout goes to your UPI or bank once both parties approve. You do not pay at Checkout.'}
                 </p>
               </div>
               <span className="pv-stat__value pv-winner-banner__amount">

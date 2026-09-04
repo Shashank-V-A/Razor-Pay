@@ -7,7 +7,7 @@ import { hackathonBelongsToOrganizerPortal } from '../../utils/organizerPortalFi
 import { appendIssuerAuditLog } from '../../utils/issuerAuditLog'
 import { useHackathons, usePayoutProposals } from '../../hooks/useHackathons'
 import { useEscrow } from '../../hooks/useEscrow'
-import { formatDate, formatXlm, isEscrowFullyFunded, stellarTxUrl } from '../../utils/format'
+import { formatDate, formatXlm, isEscrowFullyFunded, payoutStatusCopy, stellarTxUrl } from '../../utils/format'
 import {
   canProposePayout,
   fundingGapXlm,
@@ -15,6 +15,8 @@ import {
   workflowSteps,
   WORKFLOW_STAGE_META,
 } from '../../utils/payoutWorkflow'
+import { evaluatePayment } from '@/lib/agent/evaluators'
+import { AgentGates } from '../../components/AgentConsole'
 
 function winnersTotal(proposal) {
   return (proposal.winners || []).reduce((s, w) => s + (Number(w.prizeAmount) || 0), 0)
@@ -366,7 +368,21 @@ export default function PayoutProposal({ hackathonId, sessionWallet, onExecute }
 
                 <div className="pv-card__body">
                   {hackForProposal ? (
-                    <ProposalSteps hackathon={hackForProposal} proposal={p} />
+                    <>
+                      <ProposalSteps hackathon={hackForProposal} proposal={p} />
+                      <p className="pv-muted" style={{ marginTop: 'var(--pv-space-5)', fontSize: 'var(--pv-text-sm)' }}>
+                        Payment gate (runs before money moves; the agent cannot skip this):
+                      </p>
+                      <AgentGates
+                        gates={[
+                          evaluatePayment(
+                            p.winners || [],
+                            Number(hackForProposal.sponsorFundingXlm || 0),
+                          ),
+                          ...(hackForProposal.agent?.gates || []).filter((g) => String(g.code).startsWith('GIT')),
+                        ]}
+                      />
+                    </>
                   ) : (
                     <ProposalSteps hackathon={{ payoutProposed: true }} proposal={p} />
                   )}
@@ -437,7 +453,7 @@ export default function PayoutProposal({ hackathonId, sessionWallet, onExecute }
                   {p.status === 'executed' ? (
                     <>
                       <span className="pv-muted">
-                        Released {p.executedAt ? formatDate(p.executedAt) : ''}
+                        {payoutStatusCopy(p.txHash)} Released {p.executedAt ? formatDate(p.executedAt) : ''}
                       </span>
                       <a
                         href={p.txHash ? stellarTxUrl(p.txHash) : '#'}

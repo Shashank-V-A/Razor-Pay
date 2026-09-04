@@ -1,14 +1,21 @@
 import type { AgentNotification, AgentStage, Hackathon, HackathonAgentState } from '@/client/types/hackathon'
-import { deriveStatus, escrowBalanceXlm, payoutReceiptUrl } from '@/client/utils/format'
-import { canExecuteRelease, getPayoutWorkflowStage } from '@/client/utils/payoutWorkflow'
+import {
+  deriveStatus,
+  escrowBalanceXlm,
+  isEscrowFullyFunded,
+  payoutReceiptUrl,
+  payoutStatusCopy,
+} from '@/client/utils/format'
+import { fundingGapXlm, canExecuteRelease, getPayoutWorkflowStage } from '@/client/utils/payoutWorkflow'
 import { handleExecute } from '@/lib/backend/escrowHandlers'
+import { appendAgentLog, summarizeAgentLog } from '@/lib/agent/summarize'
 import { isSupabaseConfigured } from '@/lib/supabase/env'
 import { rowToHackathon, rowToProposal } from '@/lib/supabase/mappers'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { syncExecutedPayouts } from '@/lib/supabase/syncExecutedPayouts'
 
 export type AgentTickAction = {
-  stage: AgentStage | 'execute_failed'
+  stage: AgentStage
   hackathonId: string
   hackathonName: string
   detail: string
@@ -20,6 +27,7 @@ export type AgentTickResult = {
   ranAt: string
   source: 'supabase' | 'none'
   actions: AgentTickAction[]
+  summary: string
   error?: string
 }
 
@@ -70,7 +78,14 @@ async function saveAgentPayload(
 export async function runAgentTick(): Promise<AgentTickResult> {
   const ranAt = nowIso()
   if (!isSupabaseConfigured()) {
-    return { ok: true, ranAt, source: 'none', actions: [], error: 'Supabase is not configured' }
+    return {
+      ok: true,
+      ranAt,
+      source: 'none',
+      actions: [],
+      summary: summarizeAgentLog([]),
+      error: 'Supabase is not configured',
+    }
   }
 
   const supabase = createSupabaseServerClient()
@@ -81,12 +96,12 @@ export async function runAgentTick(): Promise<AgentTickResult> {
     .select('*')
     .order('created_at', { ascending: false })
   if (hackError) {
-    return { ok: false, ranAt, source: 'supabase', actions, error: hackError.message }
+    return { ok: false, ranAt, source: 'supabase', actions, summary: summarizeAgentLog([]), error: hackError.message }
   }
 
   const { data: proposalRows, error: proposalError } = await supabase.from('proposals').select('*')
   if (proposalError) {
-    return { ok: false, ranAt, source: 'supabase', actions, error: proposalError.message }
+    return { ok: false, ranAt, source: 'supabase', actions, summary: summarizeAgentLog([]), error: proposalError.message }
   }
 
   const proposals = (proposalRows || []).map((row) => rowToProposal(row))
@@ -97,6 +112,11 @@ export async function runAgentTick(): Promise<AgentTickResult> {
     const agent: HackathonAgentState = {
       notified: { ...(hackathon.agent?.notified || {}) },
       inbox: [...(hackathon.agent?.inbox || [])],
+      log: [...(hackathon.agent?.log || [])],
+      gates: hackathon.agent?.gates,
+      lastReceipt: hackathon.agent?.lastReceipt,
+      summary: hackathon.agent?.summary,
+      compliance: hackathon.agent?.compliance,
     }
     const proposal = findProposal(hackathon, proposals)
     const matchedProposal: Record<string, unknown> | undefined = proposal
@@ -104,7 +124,37 @@ export async function runAgentTick(): Promise<AgentTickResult> {
       : undefined
     const workflow = getPayoutWorkflowStage(hackathon, matchedProposal ? [matchedProposal] : [])
     const ended = deriveStatus(hackathon) === 'completed'
+    const liveOrEnded = deriveStatus(hackathon) === 'live' || ended
     let dirty = false
+
+    if (
+      liveOrEnded &&
+      !isEscrowFullyFunded(hackathon) &&
+      hackathon.sponsorAddress &&
+      !agent.notified?.funding
+    ) {
+      const remaining = fundingGapXlm(hackathon)
+      pushNotice(agent.inbox!, {
+        wallet: hackathon.sponsorAddress,
+        role: 'sponsor',
+        hackathonId: hackathon.id,
+        hackathonName: hackathon.name,
+        stage: 'funding',
+        title: 'Prize vault still needs funding',
+        body: `${hackathon.name} needs ₹${remaining} more before winners can be paid. Fund it from the sponsor console.`,
+        href: '/verifier',
+      })
+      agent.notified!.funding = nowIso()
+      dirty = true
+      const action: AgentTickAction = {
+        stage: 'funding',
+        hackathonId: hackathon.id,
+        hackathonName: hackathon.name,
+        detail: `Notified sponsor: ₹${remaining} remaining to fully fund the vault`,
+      }
+      actions.push(action)
+      agent.log = appendAgentLog(agent.log, action)
+    }
 
     if (ended && !hackathon.winnersSelected && !agent.notified?.event_ended) {
       const body = `${hackathon.name} has ended. Choose winners so the payout can be proposed.`
@@ -135,12 +185,14 @@ export async function runAgentTick(): Promise<AgentTickResult> {
       }
       agent.notified!.event_ended = nowIso()
       dirty = true
-      actions.push({
+      const endedAction: AgentTickAction = {
         stage: 'event_ended',
         hackathonId: hackathon.id,
         hackathonName: hackathon.name,
         detail: 'Notified organizer and sponsor to choose winners',
-      })
+      }
+      actions.push(endedAction)
+      agent.log = appendAgentLog(agent.log, endedAction)
     }
 
     if (workflow === 'winners_selected' && !agent.notified?.propose && hackathon.organizerAddress) {
@@ -157,12 +209,14 @@ export async function runAgentTick(): Promise<AgentTickResult> {
       })
       agent.notified!.propose = nowIso()
       dirty = true
-      actions.push({
+      const proposeAction: AgentTickAction = {
         stage: 'propose',
         hackathonId: hackathon.id,
         hackathonName: hackathon.name,
         detail: 'Reminded organizer to propose the payout',
-      })
+      }
+      actions.push(proposeAction)
+      agent.log = appendAgentLog(agent.log, proposeAction)
     }
 
     if (
@@ -186,15 +240,24 @@ export async function runAgentTick(): Promise<AgentTickResult> {
         hackathonId: hackathon.id,
       })
       if (!executed.success) {
-        actions.push({
+        const failed: AgentTickAction = {
           stage: 'execute_failed',
           hackathonId: hackathon.id,
           hackathonName: hackathon.name,
           detail: executed.error,
-        })
+        }
+        actions.push(failed)
+        agent.log = appendAgentLog(agent.log, failed)
+        agent.summary = summarizeAgentLog(agent.log || [])
+        dirty = true
       } else {
         const executedAt = nowIso()
         const txUrl = payoutReceiptUrl(executed.txHash)
+        const moneyCopy = payoutStatusCopy(executed.txHash)
+        agent.gates = Array.isArray(executed.gates) ? executed.gates : agent.gates
+        agent.lastReceipt = executed.txHash
+        agent.compliance = executed.compliance
+        agent.summary = moneyCopy
         const updatedProposal = {
           ...matchedProposal,
           status: 'executed',
@@ -221,8 +284,8 @@ export async function runAgentTick(): Promise<AgentTickResult> {
             hackathonId: hackathon.id,
             hackathonName: hackathon.name,
             stage: 'released',
-            title: 'Payout released in INR',
-            body: `Both sides approved. The agent executed Razorpay payouts for ${hackathon.name}.`,
+            title: 'Payout executed',
+            body: `Both sides approved. ${moneyCopy}`,
             href: '/issuer',
             view: 'payouts',
             txHash: executed.txHash,
@@ -236,33 +299,40 @@ export async function runAgentTick(): Promise<AgentTickResult> {
             hackathonId: hackathon.id,
             hackathonName: hackathon.name,
             stage: 'released',
-            title: 'Payout released in INR',
-            body: `The prize pool for ${hackathon.name} was sent to winners via Razorpay.`,
+            title: 'Payout executed',
+            body: `${hackathon.name}: ${moneyCopy}`,
             href: '/verifier',
             txHash: executed.txHash,
             txUrl,
           })
         }
         agent.notified!.released = executedAt
-        dirty = true
-        await saveAgentPayload(supabase, row.id, payload, agent, { payoutExecuted: true })
-        dirty = false
-        actions.push({
+        const releasedAction: AgentTickAction = {
           stage: 'released',
           hackathonId: hackathon.id,
           hackathonName: hackathon.name,
-          detail: 'Executed release after dual approval',
+          detail: moneyCopy,
           txHash: executed.txHash,
+        }
+        actions.push(releasedAction)
+        agent.log = appendAgentLog(agent.log, releasedAction)
+        agent.lastTickAt = ranAt
+        await saveAgentPayload(supabase, row.id, payload, agent, {
+          payoutExecuted: true,
+          payoutTxHash: executed.txHash,
         })
+        dirty = false
       }
     }
 
     if (dirty) {
+      agent.lastTickAt = ranAt
+      agent.summary = summarizeAgentLog(actions.filter((a) => a.hackathonId === hackathon.id))
       await saveAgentPayload(supabase, row.id, payload, agent)
     }
   }
 
-  return { ok: true, ranAt, source: 'supabase', actions }
+  return { ok: true, ranAt, source: 'supabase', actions, summary: summarizeAgentLog(actions) }
 }
 
 export async function listAgentNotifications(wallet: string): Promise<AgentNotification[]> {

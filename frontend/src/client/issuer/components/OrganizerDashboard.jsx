@@ -19,6 +19,7 @@ import {
 } from '../../utils/payoutWorkflow'
 import { useAgentInbox } from '../../hooks/useAgentInbox'
 import AgentInbox from '../../components/AgentInbox'
+import AgentConsole from '../../components/AgentConsole'
 
 function HackathonRow({ hackathon, sessionWallet, onNavigate, onDeleted, proposals }) {
   const status = deriveStatus(hackathon)
@@ -108,7 +109,7 @@ function HackathonRow({ hackathon, sessionWallet, onNavigate, onDeleted, proposa
 export default function OrganizerDashboard({ sessionWallet, onNavigate }) {
   const { hackathons, reload } = useHackathons((h) => hackathonBelongsToOrganizerPortal(h, sessionWallet))
   const { proposals } = usePayoutProposals()
-  const { unread, dismiss } = useAgentInbox(sessionWallet)
+  const { unread, dismiss, tickResult, tickBusy, reload: reloadInbox } = useAgentInbox(sessionWallet)
 
   const needFunding = hackathons.filter((h) => !isEscrowFullyFunded(h) && deriveStatus(h) !== 'completed')
   const needWinners = hackathons.filter(
@@ -165,7 +166,7 @@ export default function OrganizerDashboard({ sessionWallet, onNavigate }) {
       icon: 'checkCircle',
       tone: 'pv-alert--accent',
       title: `${readyToRelease.length} payout ${readyToRelease.length === 1 ? 'is' : 'are'} ready to release`,
-      text: 'Both sides approved. The orchestration agent will execute Razorpay INR payouts and post the receipt ids.',
+      text: 'Both sides approved. The agent will run payment/git gates and post a receipt. If you see pout_queued_… that is queued (no RazorpayX), not a bank credit.',
       cta: 'Release payout',
       view: 'payouts',
       id: readyToRelease[0].id,
@@ -195,6 +196,13 @@ export default function OrganizerDashboard({ sessionWallet, onNavigate }) {
         notifications={unread}
         onOpen={(notice) => onNavigate?.(notice.view || 'dashboard', notice.hackathonId)}
         onDismiss={dismiss}
+      />
+
+      <AgentConsole
+        tick={tickResult}
+        busy={tickBusy}
+        onRun={() => void reloadInbox()}
+        hackathons={hackathons}
       />
 
       {nudges.length > 0 ? (

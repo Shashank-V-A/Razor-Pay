@@ -7,13 +7,15 @@ import {
   type WinnerLike,
 } from "../agent/evaluators";
 import { isValidPayoutDestination, isValidUpiVpa } from "@/client/constants/escrow";
+import { isQueuedPayoutReceipt } from "@/client/utils/format";
 
 export interface ApiSuccess {
   success: true;
   txHash: string;
   error: "";
   vaultId?: string;
-  gates?: unknown;
+  gates?: import("@/client/types/hackathon").GateResult[];
+  compliance?: Record<string, unknown>;
   needsCheckout?: boolean;
   keyId?: string;
   amountPaise?: number;
@@ -140,16 +142,18 @@ export async function handleExecute(body: Record<string, unknown>): Promise<ApiR
       receipts.push(created.id);
     }
 
-    complianceRecord({
+    const record = complianceRecord({
       at: new Date().toISOString(),
       stage: "execute",
       hackathonId: String(body.hackathonId || ""),
-      detail: `Released ${payouts.length} INR payout(s)`,
+      detail: isQueuedPayoutReceipt(receipts.join(","))
+        ? `Payout queued (no RazorpayX) for ${payouts.length} winner(s)`
+        : `Released ${payouts.length} INR payout(s)`,
       receiptId: receipts.join(","),
       gates: [payment, git],
     });
 
-    return ok(receipts.join(","), { gates: [payment, git] });
+    return ok(receipts.join(","), { gates: [payment, git], compliance: record });
   } catch (error) {
     return fail(error);
   }

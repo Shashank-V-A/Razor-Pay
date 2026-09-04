@@ -26,7 +26,23 @@ export interface Winner {
   prizeAmount: number
 }
 
-export type AgentStage = 'event_ended' | 'propose' | 'released'
+export type GateResult = {
+  ok: boolean
+  code: 'PAYMENT_OK' | 'PAYMENT_BLOCK' | 'GIT_OK' | 'GIT_SKIP' | 'GIT_BLOCK'
+  detail: string
+  score?: number
+}
+
+export type AgentStage = 'event_ended' | 'propose' | 'released' | 'funding' | 'execute_failed'
+
+export type AgentLogEntry = {
+  at: string
+  stage: AgentStage
+  hackathonId: string
+  hackathonName: string
+  detail: string
+  txHash?: string
+}
 
 export type AgentNotification = {
   id: string
@@ -48,6 +64,27 @@ export type AgentNotification = {
 export type HackathonAgentState = {
   notified?: Partial<Record<AgentStage, string>>
   inbox?: AgentNotification[]
+  lastTickAt?: string
+  log?: AgentLogEntry[]
+  gates?: GateResult[]
+  lastReceipt?: string
+  summary?: string
+  compliance?: Record<string, unknown>
+}
+
+export type AgentTickResult = {
+  ok: boolean
+  ranAt: string
+  source: 'supabase' | 'none'
+  actions: Array<{
+    stage: string
+    hackathonId: string
+    hackathonName: string
+    detail: string
+    txHash?: string
+  }>
+  summary?: string
+  error?: string
 }
 
 export interface Hackathon {
