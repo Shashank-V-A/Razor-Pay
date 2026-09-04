@@ -1,0 +1,57 @@
+/* Winner celebration + portal mobile polish */
+
+.pv-field--grow {
+  flex: 1 1 100%;
+  min-width: 0;
+  width: 100%;
+}
+
+@media (min-width: 769px) {
+  .pv-field--grow {
+    max-width: 320px;
+  }
+}
+
+@media (max-width: 768px) {
+  .pv-card--accent .pv-card__body .pv-row--between {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--pv-space-5);
+  }
+
+  .pv-winner-banner__amount {
+    font-size: var(--pv-text-xl) !important;
+    text-align: left;
+  }
+
+  .pv-card__header .pv-field {
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  .pv-card__header .pv-select {
+    width: 100%;
+  }
+
+  .pv-event__cover {
+    aspect-ratio: 16 / 9 !important;
+  }
+
+  .pv-console-header .pv-page-header__actions {
+    width: 100%;
+  }
+
+  .pv-console-header .pv-page-header__actions .pv-btn {
+    flex: 1 1 auto;
+  }
+
+  .pv-sponsor-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .pv-winner-banner__title {
+    font-size: var(--pv-text-lg);
+  }
+}

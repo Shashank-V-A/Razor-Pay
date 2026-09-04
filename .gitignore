@@ -1,0 +1,14 @@
+node_modules/
+.env
+escrow-state.json
+dist/
+.next/
+web/.next/
+*.log
+keys.txt
+
+# Rust / Soroban
+target/
+**/target/
+Cargo.lock
+.soroban/

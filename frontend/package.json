@@ -1,0 +1,40 @@
+{
+  "name": "prizevault",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "clean": "node scripts/clean-next.mjs",
+    "dev": "next dev",
+    "dev:clean": "node scripts/clean-next.mjs && next dev",
+    "build": "node scripts/verify-supabase-env.mjs && next build",
+    "build:verify": "node scripts/verify-supabase-env.mjs && next build",
+    "build:clean": "node scripts/clean-next.mjs && next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@base-ui/react": "^1.7.0",
+    "@supabase/supabase-js": "^2.112.4",
+    "buffer": "^6.0.3",
+    "canvas-confetti": "^1.9.4",
+    "cobe": "^2.0.1",
+    "dotenv": "^17.4.2",
+    "ipfs-http-client": "^60.0.1",
+    "next": "15.5.24",
+    "pdfjs-dist": "^6.2.108",
+    "qrcode": "^1.5.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@types/canvas-confetti": "^1.9.0",
+    "@types/node": "^20",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "eslint": "^9",
+    "eslint-config-next": "15.5.24",
+    "typescript": "^5",
+    "webpack": "^5.109.2"
+  }
+}
