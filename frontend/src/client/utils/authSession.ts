@@ -1,13 +1,15 @@
+import { migrateLocalKey } from './hackPayStorage'
+
 export type AppRole = 'participant' | 'sponsor' | 'organizer'
 
-import { migrateLocalKey } from './twinLockStorage'
-
-const SESSION_KEY = 'twin_lock_active_session'
-const MANUAL_CONNECT_KEY = 'twin_lock_manual_connect_required'
+const SESSION_KEY = 'hack_pay_active_session'
+const MANUAL_CONNECT_KEY = 'hack_pay_manual_connect_required'
 
 if (typeof window !== 'undefined') {
   migrateLocalKey('prize_vault_active_session', SESSION_KEY)
+  migrateLocalKey('twin_lock_active_session', SESSION_KEY)
   migrateLocalKey('prize_vault_manual_connect_required', MANUAL_CONNECT_KEY)
+  migrateLocalKey('twin_lock_manual_connect_required', MANUAL_CONNECT_KEY)
 }
 
 interface ActiveSession {

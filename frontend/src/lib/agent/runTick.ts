@@ -140,7 +140,7 @@ export async function runAgentTick(): Promise<AgentTickResult> {
         hackathonId: hackathon.id,
         hackathonName: hackathon.name,
         stage: 'funding',
-        title: 'TwinLock vault still needs funding',
+        title: 'HackPay vault still needs funding',
         body: `${hackathon.name} needs ₹${remaining} more before winners can be paid. Fund it from the sponsor console.`,
         href: '/verifier',
       })

@@ -1,4 +1,4 @@
-# TwinLock — dual-control hackathon prizes in INR
+# HackPay — dual-control hackathon prizes in INR
 
 Blockchain-free prize escrow for Web2 events. Prize funds sit in a **Razorpay INR vault** until **both sponsor and organizer** approve. Agentic gates (timeline, payment math, optional GitHub scorecard) must pass before winners are paid.
 
@@ -46,7 +46,7 @@ Open http://localhost:3000 (or 3001 if 3000 is taken). Sign in with **email + ro
 
 ## Agents
 
-`POST /api/agent/tick` (also GET) is the orchestration loop. Organizer and sponsor dashboards run it on load and every 60s, and show a **TwinLock agent** console.
+`POST /api/agent/tick` (also GET) is the orchestration loop. Organizer and sponsor dashboards run it on load and every 60s, and show a **HackPay agent** console.
 
 What the tick does:
 
@@ -60,7 +60,7 @@ The agent **cannot** approve payouts or call Checkout. Dual-control stays in cod
 ### Verify locally
 
 1. Restart `npm run dev`, sign in as **organizer** (`/issuer`) and **sponsor** (`/verifier`).
-2. Confirm the **TwinLock agent** card: last tick time, **Run tick**, and any error (Supabase service role is required to persist).
+2. Confirm the **HackPay agent** card: last tick time, **Run tick**, and any error (Supabase service role is required to persist).
 3. Hit `http://localhost:3000/api/agent/tick` — JSON `actions` + `summary`.
 4. **Funding:** live unfunded event with a sponsor email → sponsor inbox “Prize vault still needs funding”.
 5. Set event **end date in the past**, no winners → organizer inbox “choose winners”.

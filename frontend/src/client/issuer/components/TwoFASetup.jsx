@@ -267,7 +267,7 @@ export default function TwoFASetup() {
           </span>
           <h4 className="pv-empty__title">Not available in this environment</h4>
           <p className="pv-empty__text">
-            2FA needs the TwinLock API running on port 3000. Escrow, winner selection and payouts
+            2FA needs the HackPay API running on port 3000. Escrow, winner selection and payouts
             all work without it — they are secured by your signed-in account, not by this console.
           </p>
           <button

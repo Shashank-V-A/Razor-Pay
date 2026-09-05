@@ -91,7 +91,7 @@ function SponsorConsole() {
     refresh()
     return subscribeHackathonsDatasetChanged(() => {
       void refresh()
-    }, [PROPOSALS_STORAGE_KEY, 'prize_vault_payout_proposals'])
+    }, [PROPOSALS_STORAGE_KEY, 'twin_lock_payout_proposals', 'prize_vault_payout_proposals'])
   }, [senderAddress])
 
   const escrows = useMemo(
@@ -244,8 +244,8 @@ function SponsorConsole() {
           key: fundResult.keyId || '',
           orderId: fundResult.orderId || fundResult.txHash,
           amountPaise: fundResult.amountPaise,
-          name: 'TwinLock',
-          description: `TwinLock escrow · ${hackRow.name}`,
+          name: 'HackPay',
+          description: `HackPay escrow · ${hackRow.name}`,
           prefillEmail: senderAddress,
         })
         const confirmed = await confirmFund(paid)
@@ -508,7 +508,7 @@ function SponsorConsole() {
 
       <footer className="pv-footer">
         <div className="pv-footer__inner">
-          <span>TwinLock · INR dual-control prize escrow · sponsor console.</span>
+          <span>HackPay · INR dual-control prize escrow · sponsor console.</span>
           <ul className="pv-footer__links">
             <li>
               <a href="/issuer">Organizer tools</a>

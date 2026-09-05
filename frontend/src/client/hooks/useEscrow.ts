@@ -61,7 +61,7 @@ function normalizePayouts(winners: ProposeWinnerInput[]): EscrowPayout[] {
 }
 
 /**
- * React hook that talks to the TwinLock escrow API:
+ * React hook that talks to the HackPay escrow API:
  *   POST /api/escrow/propose | approve | execute
  */
 export function useEscrow(): UseEscrowResult {

@@ -64,7 +64,7 @@ export default function AgentConsole({
     <section className="pv-card" style={{ animation: 'pv-fade-in 0.45s ease both' }}>
       <div className="pv-card__header">
         <div>
-          <h3 className="pv-card__title">TwinLock agent</h3>
+          <h3 className="pv-card__title">HackPay agent</h3>
           <p className="pv-card__subtitle">
             Last tick {formatTickTime(tick?.ranAt || hackathons.find((h) => h.agent?.lastTickAt)?.agent?.lastTickAt)}
             {tick?.source ? ` · ${tick.source}` : ''}

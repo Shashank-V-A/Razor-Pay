@@ -1,5 +1,5 @@
 /* ==========================================================================
-   TwinLock primitives — the shared component vocabulary.
+   HackPay primitives — the shared component vocabulary.
    Every screen in every app is built from these classes. Depends on
    tokens.css + base.css. No app-specific rules belong in this file.
    ========================================================================== */

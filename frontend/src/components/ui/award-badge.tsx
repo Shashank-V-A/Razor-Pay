@@ -299,7 +299,7 @@ export const AwardBadge = ({ type = 'verified', link, className }: AwardBadgePro
         href={link}
         target="_blank"
         rel="noreferrer"
-        aria-label="Prize pool funded and verified by TwinLock"
+        aria-label="Prize pool funded and verified by HackPay"
       >
         {content}
       </a>
@@ -311,7 +311,7 @@ export const AwardBadge = ({ type = 'verified', link, className }: AwardBadgePro
       {...sharedProps}
       ref={ref as React.RefObject<HTMLDivElement>}
       role="img"
-      aria-label="Prize pool funded and verified by TwinLock"
+      aria-label="Prize pool funded and verified by HackPay"
     >
       {content}
     </div>

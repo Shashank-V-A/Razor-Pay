@@ -1,4 +1,4 @@
-/** Dual-control TwinLock INR vault (not a blockchain contract). */
+/** Dual-control HackPay INR vault (not a blockchain contract). */
 export const INR_VAULT_ID = 'pv_inr_vault'
 
 /** @deprecated use INR_VAULT_ID */

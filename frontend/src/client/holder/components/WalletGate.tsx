@@ -139,13 +139,13 @@ export default function WalletGate({
         <span className="pv-gate__brand-mark" aria-hidden>
           <Icon name="lock" size={14} />
         </span>
-        TwinLock
+        HackPay
       </a>
 
       <div className="pv-gate__stage">
         <div className={`pv-gate__card ${loginStep === 'connect' ? 'is-connect' : ''}`.trim()}>
           <section className="pv-gate__hello">
-            <p className="pv-gate__kicker">TwinLock · dual-control INR</p>
+            <p className="pv-gate__kicker">HackPay · dual-control INR</p>
             <h2 key={copy.hello} className="pv-gate__hello-title">
               {copy.hello}
             </h2>

@@ -1,5 +1,5 @@
 /**
- * TwinLock Supabase project defaults.
+ * HackPay Supabase project defaults.
  * The publishable key is public (embedded in the client bundle) — same as Supabase anon key.
  * Override via NEXT_PUBLIC_SUPABASE_* env vars for other projects / environments.
  */

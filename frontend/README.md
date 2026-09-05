@@ -1,4 +1,4 @@
-# TwinLock (Next.js)
+# HackPay (Next.js)
 
 Vercel **Root Directory** must be `frontend` (this folder).
 

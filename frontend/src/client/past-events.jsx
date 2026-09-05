@@ -272,7 +272,7 @@ export default function PastEventsPage() {
 
       <footer className="pv-footer">
         <div className="pv-footer__inner">
-          <span>TwinLock · hackathon prize escrow powered by Razorpay INR dual-control.</span>
+          <span>HackPay · hackathon prize escrow powered by Razorpay INR dual-control.</span>
           <ul className="pv-footer__links">
             <li>
               <a href="/">Home</a>

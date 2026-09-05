@@ -136,7 +136,7 @@ export async function geocodeCity(city: string): Promise<GlobeCoords | null> {
     url.searchParams.set('q', query)
 
     const res = await fetch(url.toString(), {
-      headers: { 'Accept-Language': 'en', 'User-Agent': 'TwinLock/1.0 (hackathon globe)' },
+      headers: { 'Accept-Language': 'en', 'User-Agent': 'HackPay/1.0 (hackathon globe)' },
     })
     if (!res.ok) return null
 

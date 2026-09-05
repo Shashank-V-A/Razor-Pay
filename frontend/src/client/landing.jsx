@@ -246,7 +246,7 @@ function Landing() {
               <p className="pv-hero__lede">
                 Sponsors do not want prize funds misused or delayed. Organizers do not want to
                 front cash or take the blame. Winners just want a guaranteed payout once results
-                are final. TwinLock holds the rupees until both sides agree.
+                are final. HackPay holds the rupees until both sides agree.
               </p>
               <div className="pv-hero__cta">
                 <a href="#events" className="pv-btn pv-btn--primary pv-btn--lg">
@@ -455,7 +455,7 @@ function Landing() {
 
       <footer className="pv-footer">
         <div className="pv-footer__inner">
-          <span>TwinLock · hackathon prize escrow powered by Razorpay INR and agentic dual-control.</span>
+          <span>HackPay · hackathon prize escrow powered by Razorpay INR and agentic dual-control.</span>
           <ul className="pv-footer__links">
             <li>
               <a href="/holder">Participant portal</a>

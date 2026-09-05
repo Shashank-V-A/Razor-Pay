@@ -1,7 +1,7 @@
 {
-  "name": "twinlock",
+  "name": "hackpay",
   "version": "1.0.0",
-  "description": "TwinLock — agentic dual-control hackathon prize escrow in INR via Razorpay",
+  "description": "HackPay — agentic dual-control hackathon prize escrow in INR via Razorpay",
   "type": "module",
   "scripts": {
     "dev": "npm run --prefix frontend dev",

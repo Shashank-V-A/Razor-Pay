@@ -5,12 +5,13 @@
 import { dropLegacyStellarProposals } from './legacyWeb3Data'
 import { emitHackathonsChanged } from './hackathonSync'
 import { saveAllProposals, fetchProposals } from '../services/hackathonApi'
-import { migrateLocalKey } from './twinLockStorage'
+import { migrateLocalKey } from './hackPayStorage'
 
-export const PROPOSALS_STORAGE_KEY = 'twin_lock_payout_proposals'
+export const PROPOSALS_STORAGE_KEY = 'hack_pay_payout_proposals'
 
 if (typeof window !== 'undefined') {
   migrateLocalKey('prize_vault_payout_proposals', PROPOSALS_STORAGE_KEY)
+  migrateLocalKey('twin_lock_payout_proposals', PROPOSALS_STORAGE_KEY)
 }
 
 export function getPayoutProposals(): Record<string, unknown>[] {

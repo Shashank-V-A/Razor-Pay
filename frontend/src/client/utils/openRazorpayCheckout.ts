@@ -64,8 +64,8 @@ export async function openRazorpayCheckout(options: {
       order_id: options.orderId,
       amount: options.amountPaise,
       currency: 'INR',
-      name: options.name || 'TwinLock',
-      description: options.description || 'TwinLock prize escrow deposit',
+      name: options.name || 'HackPay',
+      description: options.description || 'HackPay prize escrow deposit',
       // Test Mode: UPI opens a live QR that cannot be paid with a real app.
       // NPCI also retired UPI Collect (typed VPA) in 2026. Use mock netbanking.
       prefill: {

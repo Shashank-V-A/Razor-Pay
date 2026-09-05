@@ -18,9 +18,9 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TwinLock · Dual-control hackathon prizes in INR",
+  title: "HackPay · Dual-control hackathon prizes in INR",
   description:
-    "TwinLock locks hackathon prize money in a Razorpay INR vault. Sponsor and organizer both approve before any payout moves.",
+    "HackPay locks hackathon prize money in a Razorpay INR vault. Sponsor and organizer both approve before any payout moves.",
 };
 
 export const viewport: Viewport = {
@@ -45,7 +45,7 @@ export default function RootLayout({
       <head>
         <Script id="pv-global-polyfill" strategy="beforeInteractive">{`
           if (typeof global === 'undefined') window.global = window;
-          try { localStorage.removeItem('twin_lock_theme'); localStorage.removeItem('prize_vault_theme'); } catch (e) {}
+          try { localStorage.removeItem('hack_pay_theme'); localStorage.removeItem('twin_lock_theme'); localStorage.removeItem('prize_vault_theme'); } catch (e) {}
         `}</Script>
         <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
       </head>

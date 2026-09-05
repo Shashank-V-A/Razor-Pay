@@ -42,7 +42,7 @@ export default function FundingPanel({
             <Icon name="send" size={20} />
           </span>
           <p className="pv-empty__text">
-            Select a TwinLock vault to lock INR via Razorpay.
+            Select a HackPay vault to lock INR via Razorpay.
           </p>
         </div>
       </section>
@@ -186,7 +186,7 @@ export default function FundingPanel({
               <span className="pv-field__hint">
                 Test Mode: Mastercard 5267 3181 8797 5449, any future expiry, any CVV, then any
                 4-digit OTP (Skip OTP on the bank page can still show this Axis prompt — that is
-                Razorpay, not TwinLock). Or pick any netbanking bank and click Success. Do not
+                Razorpay, not HackPay). Or pick any netbanking bank and click Success. Do not
                 use Visa 4111 or scan a UPI QR.
               </span>
             </div>

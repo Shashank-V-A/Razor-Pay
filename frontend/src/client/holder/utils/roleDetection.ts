@@ -3,12 +3,13 @@ import { Hackathon } from '../../types/hackathon'
 import { getPayoutProposals, savePayoutProposals } from '../../utils/payoutProposalsStorage'
 import { dropLegacyStellarHackathons } from '../../utils/legacyWeb3Data'
 import {
-  TWIN_LOCK_HACKATHONS_KEY,
-  TWIN_LOCK_TIMELINE_KEY,
+  HACK_PAY_HACKATHONS_KEY,
+  HACK_PAY_TIMELINE_KEY,
+  REGISTERED_HACKATHONS_KEY,
   emitHackathonsChanged,
 } from '../../utils/hackathonSync'
 
-const STORAGE_KEY = TWIN_LOCK_HACKATHONS_KEY
+const STORAGE_KEY = HACK_PAY_HACKATHONS_KEY
 
 /**
  * Detects user role based on wallet address and hackathon data
@@ -113,7 +114,7 @@ export function saveHackathonsToStorage(
   }
 }
 
-const TIMELINE_STORAGE_KEY = TWIN_LOCK_TIMELINE_KEY
+const TIMELINE_STORAGE_KEY = HACK_PAY_TIMELINE_KEY
 
 /**
  * Removes a hackathon everywhere it is persisted (shared across organizer, sponsor, participant UIs).

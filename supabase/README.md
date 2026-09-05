@@ -1,4 +1,4 @@
-# Supabase setup (TwinLock)
+# Supabase setup (HackPay)
 
 Project: **https://mjlbcskcsrxkjycjpdyh.supabase.co**
 

@@ -10,9 +10,9 @@ import {
   textFromPdfContentItems,
 } from '../../utils/timelinePdfParser'
 
-import { TWIN_LOCK_TIMELINE_KEY } from '../../utils/hackathonSync'
+import { HACK_PAY_TIMELINE_KEY } from '../../utils/hackathonSync'
 
-const TIMELINE_STORAGE_KEY = TWIN_LOCK_TIMELINE_KEY
+const TIMELINE_STORAGE_KEY = HACK_PAY_TIMELINE_KEY
 
 // CDN worker works under both Vite and Next (avoids Vite-only `?url` imports).
 GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsVersion}/build/pdf.worker.min.mjs`

@@ -24,9 +24,9 @@ import { getPayoutWorkflowStage, WORKFLOW_STAGE_META } from '../../utils/payoutW
 import { AgentGates } from '../../components/AgentConsole'
 import { findWinnerForAccount } from '../../utils/winnerMatch'
 
-import { TWIN_LOCK_TIMELINE_KEY } from '../../utils/hackathonSync'
+import { HACK_PAY_TIMELINE_KEY } from '../../utils/hackathonSync'
 
-const TIMELINE_STORAGE_KEY = TWIN_LOCK_TIMELINE_KEY
+const TIMELINE_STORAGE_KEY = HACK_PAY_TIMELINE_KEY
 
 interface TimelineEvent {
   id: string
@@ -218,7 +218,7 @@ export default function EventDetail({
               rel="noreferrer"
               className="pv-btn pv-btn--ghost pv-btn--sm"
             >
-              Open TwinLock vault
+              Open HackPay vault
               <Icon name="external" size={13} />
             </a>
           ) : (

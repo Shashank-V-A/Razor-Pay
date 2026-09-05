@@ -1,8 +1,9 @@
-import { migrateLocalKey } from './twinLockStorage'
+import { migrateLocalKey } from './hackPayStorage'
 
-const AUDIT_LOG_STORAGE_KEY = 'twin_lock_issuer_audit_logs'
+const AUDIT_LOG_STORAGE_KEY = 'hack_pay_issuer_audit_logs'
 if (typeof window !== 'undefined') {
   migrateLocalKey('prize_vault_issuer_audit_logs', AUDIT_LOG_STORAGE_KEY)
+  migrateLocalKey('twin_lock_issuer_audit_logs', AUDIT_LOG_STORAGE_KEY)
 }
 
 function readStoredLogs() {
@@ -43,6 +44,7 @@ export function appendIssuerAuditLog(entry) {
   const next = [newLog, ...logs].slice(0, 1000)
   writeStoredLogs(next)
   try {
+    window.dispatchEvent(new CustomEvent('hack_pay_audit_logs_updated'))
     window.dispatchEvent(new CustomEvent('twin_lock_audit_logs_updated'))
     window.dispatchEvent(new CustomEvent('prize_vault_audit_logs_updated'))
   } catch (_) {

@@ -13,7 +13,7 @@ class HomeErrorBoundary extends Component<{ children: ReactNode }, BoundaryState
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error("[TwinLock] Homepage render failed:", error, info.componentStack);
+    console.error("[HackPay] Homepage render failed:", error, info.componentStack);
   }
 
   render() {
@@ -28,7 +28,7 @@ class HomeErrorBoundary extends Component<{ children: ReactNode }, BoundaryState
             fontFamily: "system-ui, sans-serif",
           }}
         >
-          <h1 style={{ marginTop: 0 }}>TwinLock failed to load</h1>
+          <h1 style={{ marginTop: 0 }}>HackPay failed to load</h1>
           <p style={{ opacity: 0.85 }}>{this.state.error.message}</p>
           <button
             type="button"
@@ -56,7 +56,7 @@ class HomeErrorBoundary extends Component<{ children: ReactNode }, BoundaryState
 const Landing = dynamic(
   () =>
     import("@frontend/landing").catch((err: unknown) => {
-      console.error("[TwinLock] Landing chunk failed to load:", err);
+      console.error("[HackPay] Landing chunk failed to load:", err);
       const message = err instanceof Error ? err.message : String(err);
       const FailedLanding = () => (
         <main
@@ -86,7 +86,7 @@ const Landing = dynamic(
           fontFamily: "system-ui, sans-serif",
         }}
       >
-        Loading TwinLock…
+        Loading HackPay…
       </main>
     ),
   },

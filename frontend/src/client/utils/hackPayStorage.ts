@@ -1,4 +1,4 @@
-/** Copy a legacy localStorage key once so TwinLock keeps existing browser data. */
+/** Copy a legacy localStorage key once so HackPay keeps existing browser data. */
 export function migrateLocalKey(oldKey: string, newKey: string): void {
   if (typeof window === 'undefined' || oldKey === newKey) return
   try {

@@ -1,6 +1,6 @@
 export const meta = {
-  name: 'twinlock-frontend-audit',
-  description: 'Exhaustively map the TwinLock frontend: apps, routes, state, features, design tokens, bugs, and dead code',
+  name: 'hackpay-frontend-audit',
+  description: 'Exhaustively map the HackPay frontend: apps, routes, state, features, design tokens, bugs, and dead code',
   phases: [
     { title: 'Map', detail: 'parallel readers over each app + shared layer' },
     { title: 'Synthesize', detail: 'merge into one architecture + redesign brief' },
@@ -114,7 +114,7 @@ const MAP_SCHEMA = {
 const AREAS = [
   {
     key: 'landing',
-    prompt: `Read and fully analyze the TwinLock LANDING page area under ${ROOT}:
+    prompt: `Read and fully analyze the HackPay LANDING page area under ${ROOT}:
 - index.html
 - src/landing.jsx
 - styles.css  (the GLOBAL stylesheet, 1016 lines — read ALL of it; it is shared by every app so document its full token/class inventory carefully)
@@ -126,7 +126,7 @@ Read every file top to bottom. Do not sample.`,
   },
   {
     key: 'organizer',
-    prompt: `Read and fully analyze the TwinLock ORGANIZER (issuer) app under ${ROOT}:
+    prompt: `Read and fully analyze the HackPay ORGANIZER (issuer) app under ${ROOT}:
 - issuer.html, src/main-issuer.jsx, src/issuer/IssuerApp.jsx
 - src/issuer/context/IssuerContext.jsx
 - EVERY file in src/issuer/components/ (18 files: AuditLogPage, BulkUploadScreen, CreateHackathonForm, CredentialDetailModal, Header, IssueCredentialModal, IssuedCredentialsView, KeyManagementModal, OrganizerDashboard, OrganizerHackathonList, ParticipantManager, PayoutProposal, RevokedCredentialsView, RevokeModal, Sidebar, StudentTable, Timeline, TwoFASetup)
@@ -136,7 +136,7 @@ Read every file top to bottom. Do not sample. This is the largest app — be exh
   },
   {
     key: 'holder',
-    prompt: `Read and fully analyze the TwinLock HOLDER WALLET app under ${ROOT}:
+    prompt: `Read and fully analyze the HackPay HOLDER WALLET app under ${ROOT}:
 - holder-wallet.html, src/holderWallet.tsx, src/holderWallet.jsx, src/holderWallet.css (1177 lines — read it ALL)
 - src/holder/HolderApp.tsx, src/holder/HolderApp.jsx, src/holder/ConnectedHolderView.tsx, src/holder/StellarConnectBlock.tsx
 - src/holder/context/HolderContext.jsx (926 lines — read it ALL, it is the state core)
@@ -147,7 +147,7 @@ Read every file top to bottom. Do not sample. Pay special attention to how role 
   },
   {
     key: 'sponsor-and-shared',
-    prompt: `Read and fully analyze the TwinLock SPONSOR (recruiter) app AND the shared src/components/ layer under ${ROOT}:
+    prompt: `Read and fully analyze the HackPay SPONSOR (recruiter) app AND the shared src/components/ layer under ${ROOT}:
 - recruiter.html, src/recruiter.jsx (744 lines — read it ALL), src/recruiter.css (610 lines — read it ALL)
 - EVERY file in src/recruiter/components/ (AdvancedToolkit, AIInsightsPanel, OfflineVerificationPanel, SemanticSearchPanel, VerificationWorkbench, VPIntakePanel)
 - EVERY file in src/components/ and its CSS: CredentialList, DIDView, Header, InstitutionIntegration, KeyRecovery, PresentVCModal, ReceivedCredentials, ReceiveVCModal, WalletConnector, WalletView, shared.css
@@ -222,7 +222,7 @@ const BRIEF_SCHEMA = {
 }
 
 const brief = await agent(
-  `Here are four exhaustive area maps of the TwinLock frontend (a Stellar hackathon-prize-escrow app at ${ROOT}), produced by four readers:
+  `Here are four exhaustive area maps of the HackPay frontend (a Stellar hackathon-prize-escrow app at ${ROOT}), produced by four readers:
 
 ${live.map((m) => `===== AREA: ${m.area} =====\n${JSON.stringify(m, null, 1)}`).join('\n\n')}
 

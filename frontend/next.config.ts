@@ -19,7 +19,7 @@ const supabaseUrl = resolveSupabaseUrl();
 const supabasePublishableKey = resolveSupabasePublishableKey();
 
 const nextConfig: NextConfig = {
-  outputFileTracingRoot: repoRoot,
+  outputFileTracingRoot: process.env.VERCEL ? process.cwd() : repoRoot,
   env: {
     NEXT_PUBLIC_RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "",
     NEXT_PUBLIC_SUPABASE_URL: supabaseUrl,
